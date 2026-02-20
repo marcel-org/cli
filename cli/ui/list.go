@@ -26,7 +26,7 @@ func (i questItem) Title() string {
 }
 
 func (i questItem) Description() string {
-	reward := fmt.Sprintf("⚡ +%d XP  💰 +%d gold", i.quest.XPReward, i.quest.GoldReward)
+	reward := fmt.Sprintf("⚡ +%d  🪙 +%d", i.quest.XPReward, i.quest.GoldReward)
 	if i.journey != "" {
 		return fmt.Sprintf("%s • %s", i.journey, reward)
 	}
@@ -60,7 +60,7 @@ func (d questDelegate) Render(w io.Writer, m list.Model, index int, listItem lis
 		checkbox = "☑"
 	}
 
-	reward := fmt.Sprintf("+%d xp +%d gold", i.quest.XPReward, i.quest.GoldReward)
+	reward := fmt.Sprintf("⚡ +%d  🪙 +%d", i.quest.XPReward, i.quest.GoldReward)
 	journey := ""
 	if i.journey != "" && i.journey != "My Quests" {
 		journey = fmt.Sprintf("[%s] ", i.journey)

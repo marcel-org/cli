@@ -43,6 +43,11 @@ func (s *Storage) Load() (*models.AppData, error) {
 		return &data, err
 	}
 
+	events, err := s.apiClient.GetEvents()
+	if err != nil {
+		return &data, err
+	}
+
 	questsByJourney := make(map[int][]models.Quest)
 	var unassignedQuests []models.Quest
 
@@ -70,6 +75,7 @@ func (s *Storage) Load() (*models.AppData, error) {
 	}
 
 	data.Habits = habits
+	data.Events = events
 	data.CurrentSection = "quests"
 
 	return &data, nil

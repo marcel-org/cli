@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -25,6 +26,12 @@ func (m Model) View() string {
 		return m.renderHelpView()
 	case ConfirmDeleteView:
 		return m.renderConfirmDeleteView()
+	case QuestFormView:
+		return m.renderFormView(m.questForm)
+	case JourneyFormView:
+		return m.renderFormView(m.journeyForm)
+	case HabitFormView:
+		return m.renderFormView(m.habitForm)
 	}
 
 	return ""
@@ -50,6 +57,10 @@ func (m Model) renderQuestListView() string {
 		headerText = "Marcel - Journeys"
 		content = m.journeyList.View()
 		help = "\n" + journeyListHelp()
+	case "calendar":
+		headerText = "Marcel - Calendar"
+		content = m.calendar.View()
+		help = "\n" + calendarHelp()
 	default:
 		headerText = "Marcel - Quests"
 		content = m.questList.View()
@@ -85,6 +96,7 @@ func renderTabs(currentSection string, width int) string {
 	questStyle := lipgloss.NewStyle().Foreground(lightGray).Padding(0, 2)
 	habitStyle := lipgloss.NewStyle().Foreground(lightGray).Padding(0, 2)
 	journeyStyle := lipgloss.NewStyle().Foreground(lightGray).Padding(0, 2)
+	calendarStyle := lipgloss.NewStyle().Foreground(lightGray).Padding(0, 2)
 
 	switch currentSection {
 	case "quests":
@@ -93,6 +105,8 @@ func renderTabs(currentSection string, width int) string {
 		habitStyle = habitStyle.Foreground(brandOrange).Bold(true).Background(darkGray)
 	case "journeys":
 		journeyStyle = journeyStyle.Foreground(brandOrange).Bold(true).Background(darkGray)
+	case "calendar":
+		calendarStyle = calendarStyle.Foreground(brandOrange).Bold(true).Background(darkGray)
 	}
 
 	tabs := lipgloss.JoinHorizontal(
@@ -100,6 +114,7 @@ func renderTabs(currentSection string, width int) string {
 		questStyle.Render("Quests"),
 		habitStyle.Render("Habits"),
 		journeyStyle.Render("Journeys"),
+		calendarStyle.Render("Calendar"),
 	)
 
 	return lipgloss.NewStyle().Width(width).Render(tabs)
@@ -139,6 +154,34 @@ func journeyListHelp() string {
 		"shift+tab prev",
 		"d delete",
 		"r refresh",
+		"? help",
+		"q quit",
+	}
+
+	var styledItems []string
+	for _, item := range helpItems {
+		parts := strings.SplitN(item, " ", 2)
+		if len(parts) == 2 {
+			keyStyle := lipgloss.NewStyle().Foreground(brandOrange).Bold(true)
+			descStyle := lipgloss.NewStyle().Foreground(lightGray)
+			styledItems = append(styledItems, keyStyle.Render(parts[0])+" "+descStyle.Render(parts[1]))
+		}
+	}
+
+	return HelpStyle.Render(strings.Join(styledItems, "  •  "))
+}
+
+func calendarHelp() string {
+	helpItems := []string{
+		"←/h left",
+		"→/l right",
+		"↑/k up",
+		"↓/j down",
+		"ctrl+← prev month",
+		"ctrl+→ next month",
+		"t today",
+		"tab next section",
+		"shift+tab prev section",
 		"? help",
 		"q quit",
 	}
@@ -326,6 +369,21 @@ func (m Model) renderConfirmDeleteView() string {
 	)
 }
 
+func (m Model) renderFormView(form *huh.Form) string {
+	if form == nil {
+		return ""
+	}
+
+	formView := form.View()
+
+	return lipgloss.Place(
+		m.width,
+		m.height,
+		lipgloss.Center,
+		lipgloss.Center,
+		formView,
+	)
+}
 
 func (m Model) renderJourneyDetailView() string {
 	if m.selectedJourney == nil {

@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"marcel-cli/models"
 	"marcel-cli/storage"
+	"marcel-cli/ui/components"
 
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/huh"
 )
 
 type ViewMode int
@@ -19,6 +21,9 @@ const (
 	HelpView
 	ConfirmDeleteView
 	JourneyDetailView
+	QuestFormView
+	JourneyFormView
+	HabitFormView
 )
 
 type Model struct {
@@ -30,6 +35,7 @@ type Model struct {
 	habitList         list.Model
 	journeyList       list.Model
 	journeyQuestList  list.Model
+	calendar          *components.Calendar
 	spinner           spinner.Model
 	message           string
 	errorMessage      string
@@ -42,6 +48,12 @@ type Model struct {
 	confirmJourney    *models.Journey
 	confirmSelected   bool
 	selectedJourney   *models.Journey
+	questForm         *huh.Form
+	journeyForm       *huh.Form
+	habitForm         *huh.Form
+	questFormData     QuestForm
+	journeyFormData   JourneyForm
+	habitFormData     HabitForm
 }
 
 func NewModel() (*Model, error) {
@@ -54,12 +66,15 @@ func NewModel() (*Model, error) {
 	sp.Spinner = spinner.Dot
 	sp.Style = SpinnerStyle
 
+	cal := components.NewCalendar()
+
 	m := &Model{
 		storage:        s,
 		mode:           LoadingView,
 		spinner:        sp,
 		data:           &models.AppData{},
 		currentSection: "quests",
+		calendar:       cal,
 	}
 
 	if err := s.GetAPIClient().CheckAuth(); err != nil {

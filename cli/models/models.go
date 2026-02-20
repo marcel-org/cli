@@ -51,9 +51,25 @@ type Habit struct {
 	IsDueToday      bool      `json:"isDueToday"`
 }
 
+type Event struct {
+	ID               int       `json:"id"`
+	Title            string    `json:"title"`
+	Date             time.Time `json:"date"`
+	EndDate          *time.Time `json:"endDate"`
+	Time             *string   `json:"time"`
+	EndTime          *string   `json:"endTime"`
+	Location         *string   `json:"location"`
+	Description      *string   `json:"description"`
+	AuthorID         int       `json:"authorId"`
+	GoogleCalendarID *string   `json:"googleCalendarId"`
+	CreatedAt        time.Time `json:"createdAt"`
+	UpdatedAt        time.Time `json:"updatedAt"`
+}
+
 type AppData struct {
 	Journeys       []Journey
 	Habits         []Habit
+	Events         []Event
 	CurrentJourney int
 	CurrentSection string
 }

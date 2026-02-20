@@ -13,6 +13,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmds = append(cmds, tea.ClearScreen)
 	}
 
+	// Handle forms first - they need all messages
+	if m.mode == QuestFormView || m.mode == JourneyFormView || m.mode == HabitFormView {
+		return m.handleFormUpdate(msg)
+	}
+
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
@@ -22,11 +27,14 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.questList = newQuestList(m.data, m.width-4, m.height-10)
 			m.habitList = newHabitList(m.data, m.width-4, m.height-10)
 			m.journeyList = newJourneyList(m.data, m.width-4, m.height-10)
+			m.calendar.SetSize(m.width-4, m.height-10)
+			m.calendar.SetEvents(m.data.Events)
 			m.ready = true
 		} else {
 			m.questList.SetSize(m.width-4, m.height-10)
 			m.habitList.SetSize(m.width-4, m.height-10)
 			m.journeyList.SetSize(m.width-4, m.height-10)
+			m.calendar.SetSize(m.width-4, m.height-10)
 		}
 
 	case tea.KeyMsg:
@@ -39,6 +47,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m.handleHabitListKeys(msg)
 			case "journeys":
 				return m.handleJourneyListKeys(msg)
+			case "calendar":
+				return m.handleCalendarKeys(msg)
 			}
 		case JourneyDetailView:
 			return m.handleJourneyDetailKeys(msg)

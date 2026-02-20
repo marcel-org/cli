@@ -5,6 +5,8 @@ import (
 	"marcel-cli/models"
 	"strings"
 	"time"
+
+	tea "github.com/charmbracelet/bubbletea"
 )
 
 func (m Model) toggleQuest(quest models.Quest) Model {
@@ -143,120 +145,36 @@ func (m Model) cancelDelete() Model {
 	return m
 }
 
-func (m Model) createNewQuest() Model {
-	form, err := NewQuestForm(m.data.Journeys)
-	m.needsRedraw = true
-	if err != nil {
-		m.message = fmt.Sprintf("Error: %v", err)
-		return m
-	}
-
-	var journeyID *int
-	if form.JourneyID != nil && *form.JourneyID != 0 {
-		journeyID = form.JourneyID
-	}
-
-	quest, err := m.storage.GetAPIClient().CreateQuest(
-		form.Title,
-		form.Note,
-		form.Difficulty,
-		journeyID,
-	)
-
-	if err != nil {
-		m.message = fmt.Sprintf("Failed to create quest: %v", err)
-		return m
-	}
-
-	m = m.refreshData()
-	m.message = fmt.Sprintf("✓ Quest created: %s", quest.Title)
-
-	return m
+func (m Model) createNewQuest() (Model, tea.Cmd) {
+	m.questFormData = QuestForm{}
+	m.questForm = BuildQuestForm(&m.questFormData, m.data.Journeys)
+	m.mode = QuestFormView
+	return m, m.questForm.Init()
 }
 
-func (m Model) createNewQuestInJourney() Model {
+func (m Model) createNewQuestInJourney() (Model, tea.Cmd) {
 	if m.selectedJourney == nil {
-		return m
+		return m, nil
 	}
 
-	form, err := NewQuestFormSimple()
-	m.needsRedraw = true
-	if err != nil {
-		m.message = fmt.Sprintf("Error: %v", err)
-		return m
-	}
-
-	quest, err := m.storage.GetAPIClient().CreateQuest(
-		form.Title,
-		form.Note,
-		form.Difficulty,
-		&m.selectedJourney.ID,
-	)
-
-	if err != nil {
-		m.message = fmt.Sprintf("Failed to create quest: %v", err)
-		return m
-	}
-
-	m = m.refreshData()
-	if m.selectedJourney != nil {
-		for _, j := range m.data.Journeys {
-			if j.ID == m.selectedJourney.ID {
-				m.selectedJourney = &j
-				m.journeyQuestList = newJourneyQuestList(&j, m.width-4, m.height-10)
-				break
-			}
-		}
-	}
-	m.mode = JourneyDetailView
-	m.message = fmt.Sprintf("✓ Quest created: %s", quest.Title)
-
-	return m
+	m.questFormData = QuestForm{}
+	m.questForm = BuildQuestForm(&m.questFormData, m.data.Journeys)
+	m.mode = QuestFormView
+	return m, m.questForm.Init()
 }
 
-func (m Model) createNewHabit() Model {
-	form, err := NewHabitForm()
-	m.needsRedraw = true
-	if err != nil {
-		m.message = fmt.Sprintf("Error: %v", err)
-		return m
-	}
-
-	habit, err := m.storage.GetAPIClient().CreateHabit(
-		form.Name,
-		form.CycleType,
-		form.CycleConfig,
-	)
-
-	if err != nil {
-		m.message = fmt.Sprintf("Failed to create habit: %v", err)
-		return m
-	}
-
-	m = m.refreshData()
-	m.message = fmt.Sprintf("✓ Habit created: %s", habit.Name)
-
-	return m
+func (m Model) createNewHabit() (Model, tea.Cmd) {
+	m.habitFormData = HabitForm{}
+	m.habitForm = BuildHabitForm(&m.habitFormData)
+	m.mode = HabitFormView
+	return m, m.habitForm.Init()
 }
 
-func (m Model) createNewJourney() Model {
-	form, err := NewJourneyForm()
-	m.needsRedraw = true
-	if err != nil {
-		m.message = fmt.Sprintf("Error: %v", err)
-		return m
-	}
-
-	journey, err := m.storage.GetAPIClient().CreateJourney(form.Name)
-	if err != nil {
-		m.message = fmt.Sprintf("Failed to create journey: %v", err)
-		return m
-	}
-
-	m = m.refreshData()
-	m.message = fmt.Sprintf("✓ Journey created: %s", journey.Name)
-
-	return m
+func (m Model) createNewJourney() (Model, tea.Cmd) {
+	m.journeyFormData = JourneyForm{}
+	m.journeyForm = BuildJourneyForm(&m.journeyFormData)
+	m.mode = JourneyFormView
+	return m, m.journeyForm.Init()
 }
 
 func (m Model) enterJourney(journey models.Journey) Model {
@@ -307,7 +225,10 @@ func (m Model) toggleHabit(habit models.Habit) Model {
 			if len(parts) > 1 {
 				configPart := strings.Split(parts[1], ". Next due:")
 				if len(configPart) > 1 {
-					nextDue := strings.TrimSpace(strings.TrimSuffix(configPart[1], "."))
+					nextDue := strings.TrimSpace(configPart[1])
+					nextDue = strings.TrimSuffix(nextDue, ".")
+					nextDue = strings.TrimSuffix(nextDue, "\"}")
+					nextDue = strings.TrimSuffix(nextDue, "}")
 					m.message = fmt.Sprintf("Not due today. Next: %s", nextDue)
 				} else {
 					m.message = "This habit is not scheduled for today"
@@ -362,4 +283,78 @@ func (m Model) showDeleteConfirmJourney(journey models.Journey) Model {
 	m.confirmJourney = &journey
 	m.confirmSelected = false
 	return m
+}
+
+func (m Model) handleFormCompletion() (tea.Model, tea.Cmd) {
+	var returnMode ViewMode = QuestListView
+	var message string
+
+	switch m.mode {
+	case QuestFormView:
+		var journeyID *int
+		if m.questFormData.JourneyID != nil && *m.questFormData.JourneyID != 0 {
+			journeyID = m.questFormData.JourneyID
+		} else if m.selectedJourney != nil {
+			journeyID = &m.selectedJourney.ID
+		}
+
+		quest, err := m.storage.GetAPIClient().CreateQuest(
+			m.questFormData.Title,
+			m.questFormData.Note,
+			m.questFormData.Difficulty,
+			journeyID,
+		)
+
+		if err != nil {
+			message = fmt.Sprintf("Failed to create quest: %v", err)
+		} else {
+			message = fmt.Sprintf("✓ Quest created: %s", quest.Title)
+		}
+
+		if m.selectedJourney != nil {
+			returnMode = JourneyDetailView
+		}
+
+	case JourneyFormView:
+		journey, err := m.storage.GetAPIClient().CreateJourney(m.journeyFormData.Name)
+		if err != nil {
+			message = fmt.Sprintf("Failed to create journey: %v", err)
+		} else {
+			message = fmt.Sprintf("✓ Journey created: %s", journey.Name)
+		}
+
+		if m.selectedJourney != nil {
+			returnMode = JourneyDetailView
+		}
+
+	case HabitFormView:
+		habit, err := m.storage.GetAPIClient().CreateHabit(
+			m.habitFormData.Name,
+			m.habitFormData.CycleType,
+			m.habitFormData.CycleConfig,
+		)
+
+		if err != nil {
+			message = fmt.Sprintf("Failed to create habit: %v", err)
+		} else {
+			message = fmt.Sprintf("✓ Habit created: %s", habit.Name)
+		}
+	}
+
+	m = m.refreshData()
+	if m.selectedJourney != nil && returnMode == JourneyDetailView {
+		for _, j := range m.data.Journeys {
+			if j.ID == m.selectedJourney.ID {
+				m.selectedJourney = &j
+				m.journeyQuestList = newJourneyQuestList(&j, m.width-4, m.height-10)
+				break
+			}
+		}
+	}
+
+	m.mode = returnMode
+	m.message = message
+	m.needsRedraw = true
+
+	return m, nil
 }
