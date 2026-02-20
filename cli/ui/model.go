@@ -18,27 +18,30 @@ const (
 	ErrorView
 	HelpView
 	ConfirmDeleteView
+	JourneyDetailView
 )
 
 type Model struct {
-	storage         *storage.Storage
-	data            *models.AppData
-	mode            ViewMode
-	currentSection  string
-	questList       list.Model
-	habitList       list.Model
-	journeyList     list.Model
-	spinner         spinner.Model
-	message         string
-	errorMessage    string
-	width           int
-	height          int
-	ready           bool
-	needsRedraw     bool
-	confirmQuest    *models.Quest
-	confirmHabit    *models.Habit
-	confirmJourney  *models.Journey
-	confirmSelected bool
+	storage           *storage.Storage
+	data              *models.AppData
+	mode              ViewMode
+	currentSection    string
+	questList         list.Model
+	habitList         list.Model
+	journeyList       list.Model
+	journeyQuestList  list.Model
+	spinner           spinner.Model
+	message           string
+	errorMessage      string
+	width             int
+	height            int
+	ready             bool
+	needsRedraw       bool
+	confirmQuest      *models.Quest
+	confirmHabit      *models.Habit
+	confirmJourney    *models.Journey
+	confirmSelected   bool
+	selectedJourney   *models.Journey
 }
 
 func NewModel() (*Model, error) {

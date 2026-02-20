@@ -40,6 +40,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case "journeys":
 				return m.handleJourneyListKeys(msg)
 			}
+		case JourneyDetailView:
+			return m.handleJourneyDetailKeys(msg)
 		case ErrorView:
 			return m.handleErrorKeys(msg)
 		case HelpView:

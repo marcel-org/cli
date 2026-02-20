@@ -3,6 +3,7 @@ package ui
 import (
 	"fmt"
 	"marcel-cli/models"
+	"strings"
 	"time"
 )
 
@@ -144,6 +145,7 @@ func (m Model) cancelDelete() Model {
 
 func (m Model) createNewQuest() Model {
 	form, err := NewQuestForm(m.data.Journeys)
+	m.needsRedraw = true
 	if err != nil {
 		m.message = fmt.Sprintf("Error: %v", err)
 		return m
@@ -169,6 +171,98 @@ func (m Model) createNewQuest() Model {
 	m = m.refreshData()
 	m.message = fmt.Sprintf("✓ Quest created: %s", quest.Title)
 
+	return m
+}
+
+func (m Model) createNewQuestInJourney() Model {
+	if m.selectedJourney == nil {
+		return m
+	}
+
+	form, err := NewQuestFormSimple()
+	m.needsRedraw = true
+	if err != nil {
+		m.message = fmt.Sprintf("Error: %v", err)
+		return m
+	}
+
+	quest, err := m.storage.GetAPIClient().CreateQuest(
+		form.Title,
+		form.Note,
+		form.Difficulty,
+		&m.selectedJourney.ID,
+	)
+
+	if err != nil {
+		m.message = fmt.Sprintf("Failed to create quest: %v", err)
+		return m
+	}
+
+	m = m.refreshData()
+	if m.selectedJourney != nil {
+		for _, j := range m.data.Journeys {
+			if j.ID == m.selectedJourney.ID {
+				m.selectedJourney = &j
+				m.journeyQuestList = newJourneyQuestList(&j, m.width-4, m.height-10)
+				break
+			}
+		}
+	}
+	m.mode = JourneyDetailView
+	m.message = fmt.Sprintf("✓ Quest created: %s", quest.Title)
+
+	return m
+}
+
+func (m Model) createNewHabit() Model {
+	form, err := NewHabitForm()
+	m.needsRedraw = true
+	if err != nil {
+		m.message = fmt.Sprintf("Error: %v", err)
+		return m
+	}
+
+	habit, err := m.storage.GetAPIClient().CreateHabit(
+		form.Name,
+		form.CycleType,
+		form.CycleConfig,
+	)
+
+	if err != nil {
+		m.message = fmt.Sprintf("Failed to create habit: %v", err)
+		return m
+	}
+
+	m = m.refreshData()
+	m.message = fmt.Sprintf("✓ Habit created: %s", habit.Name)
+
+	return m
+}
+
+func (m Model) createNewJourney() Model {
+	form, err := NewJourneyForm()
+	m.needsRedraw = true
+	if err != nil {
+		m.message = fmt.Sprintf("Error: %v", err)
+		return m
+	}
+
+	journey, err := m.storage.GetAPIClient().CreateJourney(form.Name)
+	if err != nil {
+		m.message = fmt.Sprintf("Failed to create journey: %v", err)
+		return m
+	}
+
+	m = m.refreshData()
+	m.message = fmt.Sprintf("✓ Journey created: %s", journey.Name)
+
+	return m
+}
+
+func (m Model) enterJourney(journey models.Journey) Model {
+	m.selectedJourney = &journey
+	m.journeyQuestList = newJourneyQuestList(&journey, m.width-4, m.height-10)
+	m.mode = JourneyDetailView
 	return m
 }
 
@@ -207,7 +301,23 @@ func (m Model) toggleHabit(habit models.Habit) Model {
 
 	_, err := m.storage.GetAPIClient().ToggleHabit(habit.ID, newDone)
 	if err != nil {
-		m.message = fmt.Sprintf("Failed to toggle habit: %v", err)
+		errMsg := err.Error()
+		if strings.Contains(errMsg, "not scheduled for today") {
+			parts := strings.Split(errMsg, "It's configured for: ")
+			if len(parts) > 1 {
+				configPart := strings.Split(parts[1], ". Next due:")
+				if len(configPart) > 1 {
+					nextDue := strings.TrimSpace(strings.TrimSuffix(configPart[1], "."))
+					m.message = fmt.Sprintf("Not due today. Next: %s", nextDue)
+				} else {
+					m.message = "This habit is not scheduled for today"
+				}
+			} else {
+				m.message = "This habit is not scheduled for today"
+			}
+		} else {
+			m.message = fmt.Sprintf("Failed to toggle habit: %v", err)
+		}
 		return m
 	}
 

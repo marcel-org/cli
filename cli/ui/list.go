@@ -334,3 +334,27 @@ func newJourneyList(data *models.AppData, width, height int) list.Model {
 
 	return l
 }
+
+func newJourneyQuestList(journey *models.Journey, width, height int) list.Model {
+	items := []list.Item{}
+
+	for _, quest := range journey.Quests {
+		items = append(items, questItem{
+			quest:   quest,
+			journey: journey.Name,
+		})
+	}
+
+	delegate := questDelegate{}
+
+	l := list.New(items, delegate, width, height)
+	l.Title = ""
+	l.SetShowTitle(false)
+	l.SetShowStatusBar(false)
+	l.SetShowHelp(false)
+	l.SetFilteringEnabled(true)
+	l.Styles.FilterPrompt = lipgloss.NewStyle().Foreground(brandOrange)
+	l.Styles.FilterCursor = lipgloss.NewStyle().Foreground(brandOrange)
+
+	return l
+}

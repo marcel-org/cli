@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
@@ -14,6 +15,8 @@ func (m Model) View() string {
 	switch m.mode {
 	case QuestListView:
 		return m.renderQuestListView()
+	case JourneyDetailView:
+		return m.renderJourneyDetailView()
 	case LoadingView:
 		return m.renderLoadingView()
 	case ErrorView:
@@ -320,5 +323,61 @@ func (m Model) renderConfirmDeleteView() string {
 		lipgloss.Center,
 		lipgloss.Center,
 		box,
+	)
+}
+
+
+func (m Model) renderJourneyDetailView() string {
+	if m.selectedJourney == nil {
+		return ""
+	}
+
+	headerText := fmt.Sprintf("Marcel - %s", m.selectedJourney.Name)
+	header := HeaderStyle.Width(m.width).Render(headerText)
+
+	content := m.journeyQuestList.View()
+
+	statusBar := ""
+	if m.message != "" {
+		var msgStyle lipgloss.Style
+		if strings.Contains(m.message, "✓") {
+			msgStyle = SuccessStyle
+		} else if strings.Contains(m.message, "Failed") || strings.Contains(m.message, "Error") {
+			msgStyle = ErrorStyle
+		} else {
+			msgStyle = MutedStyle
+		}
+		statusBar = "\n" + StatusBarStyle.Width(m.width).Render(msgStyle.Render(m.message))
+	}
+
+	helpItems := []string{
+		"↑/k up",
+		"↓/j down",
+		"space toggle",
+		"d delete",
+		"n new",
+		"esc back",
+		"? help",
+		"q quit",
+	}
+
+	var styledItems []string
+	for _, item := range helpItems {
+		parts := strings.SplitN(item, " ", 2)
+		if len(parts) == 2 {
+			keyStyle := lipgloss.NewStyle().Foreground(brandOrange).Bold(true)
+			descStyle := lipgloss.NewStyle().Foreground(lightGray)
+			styledItems = append(styledItems, keyStyle.Render(parts[0])+" "+descStyle.Render(parts[1]))
+		}
+	}
+
+	help := "\n" + HelpStyle.Render(strings.Join(styledItems, "  •  "))
+
+	return lipgloss.JoinVertical(
+		lipgloss.Left,
+		header,
+		content,
+		statusBar,
+		help,
 	)
 }

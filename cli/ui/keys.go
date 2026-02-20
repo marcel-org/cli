@@ -66,6 +66,9 @@ func (m Model) handleHabitListKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case "r":
 		return m.refreshData(), nil
 
+	case "n":
+		return m.createNewHabit(), nil
+
 	case " ", "enter":
 		if item, ok := m.habitList.SelectedItem().(habitItem); ok {
 			return m.toggleHabit(item.habit), nil
@@ -105,6 +108,14 @@ func (m Model) handleJourneyListKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case "r":
 		return m.refreshData(), nil
 
+	case "n":
+		return m.createNewJourney(), nil
+
+	case " ", "enter":
+		if item, ok := m.journeyList.SelectedItem().(journeyItem); ok {
+			return m.enterJourney(item.journey), nil
+		}
+
 	case "d":
 		if item, ok := m.journeyList.SelectedItem().(journeyItem); ok {
 			return m.showDeleteConfirmJourney(item.journey), nil
@@ -113,6 +124,45 @@ func (m Model) handleJourneyListKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	default:
 		var cmd tea.Cmd
 		m.journeyList, cmd = m.journeyList.Update(msg)
+		return m, cmd
+	}
+
+	return m, nil
+}
+
+func (m Model) handleJourneyDetailKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+	switch msg.String() {
+	case "ctrl+c", "q":
+		return m, tea.Quit
+
+	case "esc":
+		m.mode = QuestListView
+		m.selectedJourney = nil
+		return m, nil
+
+	case "?":
+		m.mode = HelpView
+		return m, nil
+
+	case "r":
+		return m.refreshData(), nil
+
+	case "n":
+		return m.createNewQuestInJourney(), nil
+
+	case " ", "enter":
+		if item, ok := m.journeyQuestList.SelectedItem().(questItem); ok {
+			return m.toggleQuest(item.quest), nil
+		}
+
+	case "d":
+		if item, ok := m.journeyQuestList.SelectedItem().(questItem); ok {
+			return m.showDeleteConfirm(item.quest), nil
+		}
+
+	default:
+		var cmd tea.Cmd
+		m.journeyQuestList, cmd = m.journeyQuestList.Update(msg)
 		return m, cmd
 	}
 
