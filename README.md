@@ -116,15 +116,30 @@ make clean
 
 Authentication is done **exclusively via the `MARCEL_TOKEN` environment variable**. The token cannot be set in the configuration file for security reasons.
 
-### API Endpoint
+### Configuration File
+
+You can create a `~/.marcel.yml` file to configure the CLI:
+
+```yaml
+# API endpoint (can be overridden with MARCEL_API_ENDPOINT env var)
+api_endpoint: https://api.marcel.my
+
+# Week start day for calendar (0 = Sunday, 1 = Monday, etc.)
+week_start_day: 1
+```
+
+**Example configuration file:**
+
+```yaml
+# ~/.marcel.yml
+api_endpoint: https://api.marcel.my
+week_start_day: 1  # Start week on Monday
+```
 
 The API endpoint can be configured in two ways:
 
 1. Environment variable: `MARCEL_API_ENDPOINT` (takes priority)
-2. Configuration file `~/.marcel.yml`:
-   ```yaml
-   api_endpoint: https://api.marcel.my
-   ```
+2. Configuration file `~/.marcel.yml` (shown above)
 
 Default: `https://api.marcel.my`
 
@@ -135,34 +150,6 @@ Default: `https://api.marcel.my`
 - [Bubbles](https://github.com/charmbracelet/bubbles) - TUI components (list, spinner, etc.)
 - [Huh](https://github.com/charmbracelet/huh) - Interactive forms and prompts
 - [Lip Gloss](https://github.com/charmbracelet/lipgloss) - Terminal styling
-
-## Architecture
-
-The CLI is organized with a clean, modular architecture:
-
-```
-cli/
-├── main.go              # Entry point
-├── api/                 # API client
-│   ├── client.go        # HTTP client
-│   ├── quests.go        # Quest endpoints
-│   └── journeys.go      # Journey endpoints
-├── config/              # Configuration
-│   └── config.go        # Config loading
-├── models/              # Data models
-│   └── models.go        # Quest, Journey models
-├── storage/             # Data layer
-│   └── storage.go       # Storage abstraction
-└── ui/                  # UI components
-    ├── model.go         # Main model
-    ├── update.go        # Update logic
-    ├── view.go          # View rendering
-    ├── keys.go          # Keyboard handling
-    ├── actions.go       # User actions
-    ├── list.go          # Quest list component
-    ├── forms.go         # Interactive forms
-    └── styles.go        # Styling definitions
-```
 
 ## License
 
