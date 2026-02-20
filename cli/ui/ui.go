@@ -315,11 +315,11 @@ func (m Model) View() string {
 var (
 	titleStyle = lipgloss.NewStyle().
 			Bold(true).
-			Foreground(lipgloss.Color("#5856D6")).
+			Foreground(lipgloss.Color("#FF9600")).
 			MarginBottom(1)
 
 	selectedStyle = lipgloss.NewStyle().
-			Foreground(lipgloss.Color("#5856D6")).
+			Foreground(lipgloss.Color("#FF9600")).
 			Bold(true)
 
 	completedStyle = lipgloss.NewStyle().
@@ -356,7 +356,7 @@ func (m Model) renderQuestView() string {
 
 			if currentJourney != journey.Name {
 				currentJourney = journey.Name
-				lines = append(lines, "\n"+lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#5856D6")).Render(journey.Name))
+				lines = append(lines, "\n"+lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#FF9600")).Render(journey.Name))
 			}
 
 			for _, quest := range journey.Quests {
@@ -456,7 +456,7 @@ func (m Model) renderConfirmDeleteView() string {
 
 	questName := lipgloss.NewStyle().
 		Bold(true).
-		Foreground(lipgloss.Color("#5856D6")).
+		Foreground(lipgloss.Color("#FF9600")).
 		Render(m.questToDelete.Title)
 
 	message := fmt.Sprintf("\nAre you sure you want to delete:\n%s", questName)
@@ -470,7 +470,7 @@ func (m Model) renderConfirmDeleteView() string {
 	noStyle := lipgloss.NewStyle().
 		Bold(true).
 		Foreground(lipgloss.Color("#FFFFFF")).
-		Background(lipgloss.Color("#5856D6")).
+		Background(lipgloss.Color("#FF9600")).
 		Padding(0, 2)
 
 	yesStyleInactive := lipgloss.NewStyle().
@@ -478,7 +478,7 @@ func (m Model) renderConfirmDeleteView() string {
 		Padding(0, 2)
 
 	noStyleInactive := lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#5856D6")).
+		Foreground(lipgloss.Color("#FF9600")).
 		Padding(0, 2)
 
 	var yesButton, noButton string
