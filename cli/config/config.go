@@ -22,7 +22,7 @@ func Load() (*Config, error) {
 	configPath := filepath.Join(homeDir, ".marcel.yml")
 
 	config := &Config{
-		APIEndpoint: "http://localhost:3000",
+		APIEndpoint: "https://api.marcel.my",
 		AuthToken:   "",
 	}
 
@@ -40,7 +40,7 @@ func Load() (*Config, error) {
 	}
 
 	if config.APIEndpoint == "" {
-		config.APIEndpoint = "http://localhost:3000"
+		config.APIEndpoint = "https://api.marcel.my"
 	}
 
 	if strings.HasPrefix(config.APIEndpoint, "~/") {
@@ -64,7 +64,7 @@ func (c *Config) Save() error {
 		return err
 	}
 
-	configPath := filepath.Join(homeDir, ".marcel-cli.yml")
+	configPath := filepath.Join(homeDir, ".marcel.yml")
 
 	data, err := yaml.Marshal(c)
 	if err != nil {
