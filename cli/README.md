@@ -13,15 +13,22 @@ A TUI (Terminal User Interface) application for viewing and managing your Marcel
 
 ## Installation
 
+### Quick Install (Recommended)
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/marcel-org/cli/main/install.sh | bash
+```
+
+This will clone the repository, build the binary, and install it to `~/.local/bin/marcel`.
+
 ### Build from source
 
 ```bash
+git clone https://github.com/marcel-org/cli.git
 cd cli
-make build
-make install
+go build -o marcel
+cp marcel ~/.local/bin/marcel
 ```
-
-This will install the `marcel` binary to `~/.local/bin/`.
 
 ## Authentication
 
