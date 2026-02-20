@@ -135,12 +135,9 @@ func (c *Calendar) View() string {
 		weekdays = weekdaysSunday
 	}
 
-	for i, day := range weekdays {
-		if i > 0 {
-			sb.WriteString(" ")
-		}
-		style := lipgloss.NewStyle().Width(8).Align(lipgloss.Center).Foreground(lipgloss.Color("#6c7086"))
-		sb.WriteString(style.Render(day))
+	headerStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("#6c7086"))
+	for _, day := range weekdays {
+		sb.WriteString(headerStyle.Render(fmt.Sprintf(" %-6s ", day)))
 	}
 	sb.WriteString("\n")
 
@@ -167,9 +164,6 @@ func (c *Calendar) View() string {
 			}
 			cellContent := c.renderMonthCell(date)
 			sb.WriteString(cellContent)
-			if day < 6 {
-				sb.WriteString(" ")
-			}
 		}
 		sb.WriteString("\n")
 
@@ -200,14 +194,14 @@ func (c *Calendar) renderMonthCell(date time.Time) string {
 	dayStr := fmt.Sprintf("%2d", date.Day())
 
 	events := c.getEventsForDate(date)
-	eventIndicator := ""
+	eventIndicator := "  "
 	if len(events) > 0 {
-		eventIndicator = fmt.Sprintf("\n●%d", len(events))
+		eventIndicator = fmt.Sprintf("●%d", len(events))
 	}
 
-	cellContent := dayStr + eventIndicator
+	cellContent := fmt.Sprintf(" %s %s ", dayStr, eventIndicator)
 
-	style := lipgloss.NewStyle().Width(8).Align(lipgloss.Center)
+	style := lipgloss.NewStyle()
 
 	if c.isSameDate(date, c.selectedDate) {
 		style = style.Background(lipgloss.Color("#45475a")).Foreground(lipgloss.Color("#fab387")).Bold(true)
