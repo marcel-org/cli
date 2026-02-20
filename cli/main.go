@@ -63,8 +63,9 @@ Input Mode:
     Esc          Cancel
     Backspace    Delete character
 
-DATA STORAGE:
-    Your configuration is stored in ~/.marcel.yml
+CONFIGURATION:
+    API endpoint: Set in ~/.marcel.yml
+    Auth token: Set MARCEL_TOKEN environment variable
 
-For more information, visit: https://github.com/saravenpi/marcel`)
+For more information, visit: https://github.com/marcel-org/cli`)
 }

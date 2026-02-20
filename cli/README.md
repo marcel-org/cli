@@ -9,7 +9,7 @@ A TUI (Terminal User Interface) application for viewing and managing your Marcel
 - ✅ Toggle quest completion with instant sync
 - 🔄 Refresh quests in real-time
 - 🎨 Clean and intuitive interface using Bubble Tea
-- ⚙️ Configuration via YAML file or environment variables
+- ⚙️ Configuration via environment variables
 
 ## Installation
 
@@ -33,20 +33,18 @@ This will install the `marcel` binary to `~/.local/bin/`.
 
 ### Step 2: Configure authentication
 
-**Option A: Environment variable (recommended)**
+Set the `MARCEL_TOKEN` environment variable:
 
 ```bash
 export MARCEL_TOKEN="marcel_your_token_here"
-export MARCEL_API_ENDPOINT="http://localhost:3000"  # optional
 ```
 
-**Option B: Configuration file**
+Add this to your shell configuration file (`~/.zshrc`, `~/.bashrc`, etc.) to make it permanent.
 
-Create `~/.marcel.yml`:
+Optionally, you can also set the API endpoint (defaults to `https://api.marcel.my`):
 
-```yaml
-api_endpoint: http://localhost:3000
-auth_token: marcel_your_token_here
+```bash
+export MARCEL_API_ENDPOINT="http://localhost:3000"  # for local development
 ```
 
 ## Usage
@@ -96,15 +94,23 @@ make install
 make clean
 ```
 
-## Configuration Priority
+## Configuration
 
-The CLI uses the following priority order for configuration:
+### Authentication
 
-1. Environment variables (`MARCEL_TOKEN`, `MARCEL_API_ENDPOINT`)
-2. Configuration file (`~/.marcel.yml`)
-3. Default values
+Authentication is done **exclusively via the `MARCEL_TOKEN` environment variable**. The token cannot be set in the configuration file for security reasons.
 
-Environment variables always override configuration file values.
+### API Endpoint
+
+The API endpoint can be configured in two ways:
+
+1. Environment variable: `MARCEL_API_ENDPOINT` (takes priority)
+2. Configuration file `~/.marcel.yml`:
+   ```yaml
+   api_endpoint: https://api.marcel.my
+   ```
+
+Default: `https://api.marcel.my`
 
 ## Tech Stack
 

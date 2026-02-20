@@ -10,7 +10,7 @@ import (
 
 type Config struct {
 	APIEndpoint string `yaml:"api_endpoint"`
-	AuthToken   string `yaml:"auth_token"`
+	AuthToken   string
 }
 
 func Load() (*Config, error) {
@@ -47,7 +47,7 @@ func Load() (*Config, error) {
 		config.APIEndpoint = filepath.Join(homeDir, config.APIEndpoint[2:])
 	}
 
-	if envToken := os.Getenv("MARCEL_TOKEN"); envToken != "" && config.AuthToken == "" {
+	if envToken := os.Getenv("MARCEL_TOKEN"); envToken != "" {
 		config.AuthToken = envToken
 	}
 
