@@ -17,20 +17,23 @@ const (
 	QuestView ViewMode = iota
 	HelpView
 	ErrorView
+	ConfirmDeleteView
 )
 
 type Model struct {
-	storage       *storage.Storage
-	data          *models.AppData
-	mode          ViewMode
-	questCursor   int
-	message       string
-	errorMessage  string
-	width         int
-	height        int
-	allQuests     []models.Quest
-	loading       bool
-	lastKey       string
+	storage         *storage.Storage
+	data            *models.AppData
+	mode            ViewMode
+	questCursor     int
+	message         string
+	errorMessage    string
+	width           int
+	height          int
+	allQuests       []models.Quest
+	loading         bool
+	lastKey         string
+	questToDelete   *models.Quest
+	confirmCursor   int
 }
 
 func NewModel() (*Model, error) {
@@ -98,6 +101,8 @@ func (m Model) handleKeypress(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return m.handleHelpViewKeys(msg)
 	case ErrorView:
 		return m.handleErrorViewKeys(msg)
+	case ConfirmDeleteView:
+		return m.handleConfirmDeleteKeys(msg)
 	}
 	return m, nil
 }
@@ -139,6 +144,14 @@ func (m Model) handleQuestViewKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case "?":
 		m.lastKey = ""
 		m.mode = HelpView
+	case "d":
+		m.lastKey = ""
+		if len(m.allQuests) > 0 && m.questCursor < len(m.allQuests) {
+			quest := m.allQuests[m.questCursor]
+			m.questToDelete = &quest
+			m.confirmCursor = 1
+			m.mode = ConfirmDeleteView
+		}
 	default:
 		m.lastKey = ""
 	}
@@ -159,6 +172,26 @@ func (m Model) handleErrorViewKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return m, tea.Quit
 	case "r":
 		return m.refreshQuests(), nil
+	}
+	return m, nil
+}
+
+func (m Model) handleConfirmDeleteKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+	switch msg.String() {
+	case "ctrl+c", "q", "esc":
+		m.mode = QuestView
+		m.questToDelete = nil
+	case "left", "h":
+		m.confirmCursor = 0
+	case "right", "l":
+		m.confirmCursor = 1
+	case "enter", " ":
+		if m.confirmCursor == 0 {
+			return m.deleteCurrentQuest(), nil
+		} else {
+			m.mode = QuestView
+			m.questToDelete = nil
+		}
 	}
 	return m, nil
 }
@@ -192,6 +225,48 @@ func (m Model) toggleCurrentQuest() Model {
 	} else {
 		m.message = "Quest marked as incomplete"
 	}
+
+	return m
+}
+
+func (m Model) deleteCurrentQuest() Model {
+	if m.questToDelete == nil {
+		return m
+	}
+
+	err := m.storage.GetAPIClient().DeleteQuest(m.questToDelete.ID)
+	if err != nil {
+		m.message = fmt.Sprintf("Failed to delete quest: %v", err)
+		m.mode = QuestView
+		m.questToDelete = nil
+		return m
+	}
+
+	newQuests := []models.Quest{}
+	for _, q := range m.allQuests {
+		if q.ID != m.questToDelete.ID {
+			newQuests = append(newQuests, q)
+		}
+	}
+	m.allQuests = newQuests
+
+	for i := range m.data.Journeys {
+		newJourneyQuests := []models.Quest{}
+		for _, q := range m.data.Journeys[i].Quests {
+			if q.ID != m.questToDelete.ID {
+				newJourneyQuests = append(newJourneyQuests, q)
+			}
+		}
+		m.data.Journeys[i].Quests = newJourneyQuests
+	}
+
+	if m.questCursor >= len(m.allQuests) && len(m.allQuests) > 0 {
+		m.questCursor = len(m.allQuests) - 1
+	}
+
+	m.message = "Quest deleted successfully"
+	m.mode = QuestView
+	m.questToDelete = nil
 
 	return m
 }
@@ -231,6 +306,8 @@ func (m Model) View() string {
 		return m.renderHelpView()
 	case ErrorView:
 		return m.renderErrorView()
+	case ConfirmDeleteView:
+		return m.renderConfirmDeleteView()
 	}
 	return ""
 }
@@ -316,7 +393,7 @@ func (m Model) renderQuestView() string {
 		}
 	}
 
-	help := mutedStyle.Render("\n\nj/k or arrows navigate  • gg/G jump  • space toggle  • r refresh  • ? help  • q quit")
+	help := mutedStyle.Render("\n\nj/k navigate  • gg/G jump  • space toggle  • d delete  • r refresh  • ? help  • q quit")
 
 	return title + "\n" + content + statusLine + help
 }
@@ -330,6 +407,7 @@ Quest View:
   gg          Jump to top
   G           Jump to bottom
   Space       Toggle quest completion
+  d           Delete quest (with confirmation)
   r           Refresh quests from server
   ?           Show/hide help
   q, Ctrl+C   Quit
@@ -363,4 +441,58 @@ func (m Model) renderErrorView() string {
 	help := mutedStyle.Render("\n\nr - retry  • q - quit")
 
 	return title + "\n\n" + content + help
+}
+
+func (m Model) renderConfirmDeleteView() string {
+	if m.questToDelete == nil {
+		m.mode = QuestView
+		return m.renderQuestView()
+	}
+
+	title := lipgloss.NewStyle().
+		Bold(true).
+		Foreground(lipgloss.Color("#FF3B30")).
+		Render("Delete Quest?")
+
+	questName := lipgloss.NewStyle().
+		Bold(true).
+		Foreground(lipgloss.Color("#5856D6")).
+		Render(m.questToDelete.Title)
+
+	message := fmt.Sprintf("\nAre you sure you want to delete:\n%s", questName)
+
+	yesStyle := lipgloss.NewStyle().
+		Bold(true).
+		Foreground(lipgloss.Color("#FFFFFF")).
+		Background(lipgloss.Color("#FF3B30")).
+		Padding(0, 2)
+
+	noStyle := lipgloss.NewStyle().
+		Bold(true).
+		Foreground(lipgloss.Color("#FFFFFF")).
+		Background(lipgloss.Color("#5856D6")).
+		Padding(0, 2)
+
+	yesStyleInactive := lipgloss.NewStyle().
+		Foreground(lipgloss.Color("#FF3B30")).
+		Padding(0, 2)
+
+	noStyleInactive := lipgloss.NewStyle().
+		Foreground(lipgloss.Color("#5856D6")).
+		Padding(0, 2)
+
+	var yesButton, noButton string
+	if m.confirmCursor == 0 {
+		yesButton = yesStyle.Render("Yes, Delete")
+		noButton = noStyleInactive.Render("Cancel")
+	} else {
+		yesButton = yesStyleInactive.Render("Yes, Delete")
+		noButton = noStyle.Render("Cancel")
+	}
+
+	buttons := fmt.Sprintf("\n\n%s  %s", yesButton, noButton)
+
+	help := mutedStyle.Render("\n\nh/l or arrows to navigate  • enter/space to confirm  • esc to cancel")
+
+	return title + message + buttons + help
 }
