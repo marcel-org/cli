@@ -43,7 +43,7 @@ func NewModel() (*Model, error) {
 			storage:      s,
 			data:         &models.AppData{},
 			mode:         ErrorView,
-			errorMessage: fmt.Sprintf("Authentication failed: %v\n\nPlease set MARCEL_TOKEN environment variable or configure ~/.marcel-cli.yml", err),
+			errorMessage: fmt.Sprintf("Authentication failed: %v\n\nPlease set MARCEL_TOKEN environment variable or configure ~/.marcel.yml", err),
 		}, nil
 	}
 
