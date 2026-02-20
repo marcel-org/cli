@@ -38,9 +38,9 @@ func (i questItem) FilterValue() string {
 
 type questDelegate struct{}
 
-func (d questDelegate) Height() int { return 2 }
+func (d questDelegate) Height() int { return 1 }
 
-func (d questDelegate) Spacing() int { return 1 }
+func (d questDelegate) Spacing() int { return 0 }
 
 func (d questDelegate) Update(_ tea.Msg, _ *list.Model) tea.Cmd {
 	return nil
@@ -52,31 +52,43 @@ func (d questDelegate) Render(w io.Writer, m list.Model, index int, listItem lis
 		return
 	}
 
-	var str string
 	isSelected := index == m.Index()
 
+	checkbox := "[ ]"
 	if i.quest.Done {
-		titleStyle := CompletedItemStyle
+		checkbox = "[✓]"
+	}
+
+	reward := fmt.Sprintf("+%d xp +%d gold", i.quest.XPReward, i.quest.GoldReward)
+	journey := ""
+	if i.journey != "" && i.journey != "My Quests" {
+		journey = fmt.Sprintf("[%s] ", i.journey)
+	}
+
+	var str string
+	if i.quest.Done {
+		title := lipgloss.NewStyle().
+			Foreground(gray).
+			Strikethrough(true).
+			Render(fmt.Sprintf("%s%s", checkbox, i.quest.Title))
+
+		meta := lipgloss.NewStyle().
+			Foreground(gray).
+			Render(fmt.Sprintf(" %s%s", journey, reward))
+
 		if isSelected {
-			titleStyle = lipgloss.NewStyle().
-				Foreground(gray).
+			str = lipgloss.NewStyle().
 				Background(brandOrange).
-				Strikethrough(true).
-				Padding(0, 1)
+				Render(title + meta)
+		} else {
+			str = title + meta
 		}
-		str = fmt.Sprintf("%s\n%s",
-			titleStyle.Render(i.Title()),
-			MutedStyle.Render("  "+i.Description()),
-		)
 	} else {
-		titleStyle := NormalItemStyle
 		if isSelected {
-			titleStyle = SelectedItemStyle
+			str = SelectedItemStyle.Render(fmt.Sprintf("%s%s %s%s", checkbox, i.quest.Title, journey, reward))
+		} else {
+			str = NormalItemStyle.Render(fmt.Sprintf("%s%s %s%s", checkbox, i.quest.Title, journey, reward))
 		}
-		str = fmt.Sprintf("%s\n%s",
-			titleStyle.Render(i.Title()),
-			MutedStyle.Render("  "+i.Description()),
-		)
 	}
 
 	fmt.Fprint(w, str)
@@ -97,16 +109,11 @@ func newQuestList(data *models.AppData, width, height int) list.Model {
 	delegate := questDelegate{}
 
 	l := list.New(items, delegate, width, height)
-	l.Title = "Your Quests"
-	l.SetShowStatusBar(true)
+	l.Title = ""
+	l.SetShowTitle(false)
+	l.SetShowStatusBar(false)
+	l.SetShowHelp(false)
 	l.SetFilteringEnabled(true)
-	l.Styles.Title = TitleStyle
-	l.Styles.TitleBar = lipgloss.NewStyle().
-		Background(darkGray).
-		Foreground(brandOrange).
-		Bold(true).
-		Padding(0, 1)
-	l.Styles.StatusBar = StatusBarStyle
 	l.Styles.FilterPrompt = lipgloss.NewStyle().Foreground(brandOrange)
 	l.Styles.FilterCursor = lipgloss.NewStyle().Foreground(brandOrange)
 
