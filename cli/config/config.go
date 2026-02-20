@@ -9,8 +9,9 @@ import (
 )
 
 type Config struct {
-	APIEndpoint string `yaml:"api_endpoint"`
-	AuthToken   string
+	APIEndpoint  string `yaml:"api_endpoint"`
+	AuthToken    string `yaml:"-"`
+	WeekStartDay string `yaml:"week_start_day"`
 }
 
 func Load() (*Config, error) {
@@ -22,8 +23,9 @@ func Load() (*Config, error) {
 	configPath := filepath.Join(homeDir, ".marcel.yml")
 
 	config := &Config{
-		APIEndpoint: "https://api.marcel.my",
-		AuthToken:   "",
+		APIEndpoint:  "https://api.marcel.my",
+		AuthToken:    "",
+		WeekStartDay: "sunday",
 	}
 
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
@@ -54,6 +56,11 @@ func Load() (*Config, error) {
 	if envEndpoint := os.Getenv("MARCEL_API_ENDPOINT"); envEndpoint != "" {
 		config.APIEndpoint = envEndpoint
 	}
+
+	if config.WeekStartDay == "" {
+		config.WeekStartDay = "sunday"
+	}
+	config.WeekStartDay = strings.ToLower(config.WeekStartDay)
 
 	return config, nil
 }

@@ -16,6 +16,7 @@ type Calendar struct {
 	selectedEvent  int
 	width          int
 	height         int
+	weekStartDay   string
 }
 
 func NewCalendar() *Calendar {
@@ -27,12 +28,17 @@ func NewCalendar() *Calendar {
 		selectedEvent: 0,
 		width:         80,
 		height:        24,
+		weekStartDay:  "sunday",
 	}
 }
 
 func (c *Calendar) SetSize(width, height int) {
 	c.width = width
 	c.height = height
+}
+
+func (c *Calendar) SetWeekStartDay(day string) {
+	c.weekStartDay = day
 }
 
 func (c *Calendar) SetEvents(events []models.Event) {
@@ -119,18 +125,38 @@ func (c *Calendar) View() string {
 	sb.WriteString(header)
 	sb.WriteString("\n\n")
 
-	weekdays := []string{"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"}
+	weekdaysSunday := []string{"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"}
+	weekdaysMonday := []string{"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"}
+
+	var weekdays []string
+	if c.weekStartDay == "monday" {
+		weekdays = weekdaysMonday
+	} else {
+		weekdays = weekdaysSunday
+	}
+
 	for i, day := range weekdays {
 		if i > 0 {
 			sb.WriteString(" ")
 		}
-		style := lipgloss.NewStyle().Width(10).Align(lipgloss.Center).Foreground(lipgloss.Color("#6c7086"))
+		style := lipgloss.NewStyle().Width(8).Align(lipgloss.Center).Foreground(lipgloss.Color("#6c7086"))
 		sb.WriteString(style.Render(day))
 	}
 	sb.WriteString("\n")
 
 	firstDay := time.Date(c.currentDate.Year(), c.currentDate.Month(), 1, 0, 0, 0, 0, c.currentDate.Location())
-	startOfWeek := firstDay.AddDate(0, 0, -int(firstDay.Weekday()))
+
+	var weekStartOffset int
+	if c.weekStartDay == "monday" {
+		weekStartOffset = int(firstDay.Weekday()) - 1
+		if weekStartOffset < 0 {
+			weekStartOffset = 6
+		}
+	} else {
+		weekStartOffset = int(firstDay.Weekday())
+	}
+
+	startOfWeek := firstDay.AddDate(0, 0, -weekStartOffset)
 
 	for week := 0; week < 6; week++ {
 		for day := 0; day < 7; day++ {
@@ -177,17 +203,13 @@ func (c *Calendar) renderMonthCell(date time.Time) string {
 
 	cellContent := dayStr + eventIndicator
 
-	style := lipgloss.NewStyle().Width(10).Align(lipgloss.Center)
-
-	if c.isToday(date) {
-		style = style.Background(lipgloss.Color("#fab387")).Foreground(lipgloss.Color("#1e1e2e"))
-	}
+	style := lipgloss.NewStyle().Width(8).Align(lipgloss.Center)
 
 	if c.isSameDate(date, c.selectedDate) {
-		style = style.Border(lipgloss.RoundedBorder()).BorderForeground(lipgloss.Color("#fab387"))
-	}
-
-	if date.Month() != c.currentDate.Month() {
+		style = style.Background(lipgloss.Color("#45475a")).Foreground(lipgloss.Color("#fab387")).Bold(true)
+	} else if c.isToday(date) {
+		style = style.Foreground(lipgloss.Color("#fab387")).Bold(true)
+	} else if date.Month() != c.currentDate.Month() {
 		style = style.Foreground(lipgloss.Color("#45475a"))
 	}
 

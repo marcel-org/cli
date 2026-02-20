@@ -67,6 +67,7 @@ func NewModel() (*Model, error) {
 	sp.Style = SpinnerStyle
 
 	cal := components.NewCalendar()
+	cal.SetWeekStartDay(s.GetConfig().WeekStartDay)
 
 	m := &Model{
 		storage:        s,
