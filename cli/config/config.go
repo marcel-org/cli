@@ -47,7 +47,7 @@ func Load() (*Config, error) {
 		config.APIEndpoint = filepath.Join(homeDir, config.APIEndpoint[2:])
 	}
 
-	if envToken := os.Getenv("MARCEL_TOKEN"); envToken != "" {
+	if envToken := os.Getenv("MARCEL_TOKEN"); envToken != "" && config.AuthToken == "" {
 		config.AuthToken = envToken
 	}
 
