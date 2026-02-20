@@ -194,12 +194,12 @@ func (c *Calendar) renderMonthCell(date time.Time) string {
 	dayStr := fmt.Sprintf("%2d", date.Day())
 
 	events := c.getEventsForDate(date)
-	eventIndicator := "  "
+	var cellContent string
 	if len(events) > 0 {
-		eventIndicator = fmt.Sprintf("●%d", len(events))
+		cellContent = fmt.Sprintf("  %s*%-2d ", dayStr, len(events))
+	} else {
+		cellContent = fmt.Sprintf("  %s    ", dayStr)
 	}
-
-	cellContent := fmt.Sprintf(" %s %s ", dayStr, eventIndicator)
 
 	style := lipgloss.NewStyle()
 
