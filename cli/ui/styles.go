@@ -32,18 +32,16 @@ var (
 			Bold(true).
 			Foreground(brandOrange).
 			Background(darkGray).
-			Padding(0, 2).
+			Padding(0, 1).
 			MarginBottom(1)
 
 	SelectedItemStyle = lipgloss.NewStyle().
 				Foreground(background).
 				Background(brandOrange).
-				Bold(true).
-				Padding(0, 1)
+				Bold(true)
 
 	NormalItemStyle = lipgloss.NewStyle().
-			Foreground(white).
-			Padding(0, 1)
+			Foreground(white)
 
 	CompletedItemStyle = lipgloss.NewStyle().
 				Foreground(gray).
