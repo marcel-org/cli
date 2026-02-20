@@ -54,9 +54,9 @@ func (d questDelegate) Render(w io.Writer, m list.Model, index int, listItem lis
 
 	isSelected := index == m.Index()
 
-	checkbox := "[ ]"
+	checkbox := "☐"
 	if i.quest.Done {
-		checkbox = "[✓]"
+		checkbox = "☑"
 	}
 
 	reward := fmt.Sprintf("+%d xp +%d gold", i.quest.XPReward, i.quest.GoldReward)

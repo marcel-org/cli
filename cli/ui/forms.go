@@ -96,7 +96,10 @@ func NewConfirmDialog(title, description string) (*ConfirmDialog, error) {
 				Negative("No").
 				Value(&dialog.Confirmed),
 		),
-	).WithTheme(theme)
+	).
+		WithTheme(theme).
+		WithWidth(60).
+		WithHeight(10)
 
 	err := huhForm.Run()
 	if err != nil {
