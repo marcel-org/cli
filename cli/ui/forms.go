@@ -12,8 +12,8 @@ import (
 func getFormKeyMap() *huh.KeyMap {
 	keyMap := huh.NewDefaultKeyMap()
 	keyMap.Quit = key.NewBinding(
-		key.WithKeys("ctrl+c", "esc"),
-		key.WithHelp("esc", "quit"),
+		key.WithKeys("esc"),
+		key.WithHelp("esc", "cancel"),
 	)
 	return keyMap
 }
@@ -393,4 +393,70 @@ func NewQuestFormSimple() (*QuestForm, error) {
 	}
 
 	return form, nil
+}
+
+type EventForm struct {
+	Title       string
+	Date        string
+	Time        string
+	EndTime     string
+	Location    string
+	Description string
+}
+
+func BuildEventForm(formData *EventForm) *huh.Form {
+	theme := huh.ThemeCharm()
+	theme.Focused.Base = lipgloss.NewStyle().BorderForeground(brandOrange)
+	theme.Focused.Title = lipgloss.NewStyle().Foreground(brandOrange).Bold(true)
+	theme.Focused.TextInput.Cursor = lipgloss.NewStyle().Foreground(brandOrange)
+
+	return huh.NewForm(
+		huh.NewGroup(
+			huh.NewInput().
+				Title("Event Title").
+				Placeholder("What's the event?").
+				Value(&formData.Title).
+				Validate(func(s string) error {
+					if len(s) == 0 {
+						return fmt.Errorf("title cannot be empty")
+					}
+					return nil
+				}),
+
+			huh.NewInput().
+				Title("Date (YYYY-MM-DD)").
+				Placeholder("2024-01-01").
+				Value(&formData.Date).
+				Validate(func(s string) error {
+					if len(s) == 0 {
+						return fmt.Errorf("date cannot be empty")
+					}
+					return nil
+				}),
+
+			huh.NewInput().
+				Title("Start Time (HH:MM, optional)").
+				Placeholder("14:30").
+				Value(&formData.Time),
+
+			huh.NewInput().
+				Title("End Time (HH:MM, optional)").
+				Placeholder("16:00").
+				Value(&formData.EndTime),
+
+			huh.NewInput().
+				Title("Location (optional)").
+				Placeholder("Conference Room A").
+				Value(&formData.Location),
+
+			huh.NewText().
+				Title("Description (optional)").
+				Placeholder("Add event details...").
+				Value(&formData.Description),
+		),
+	).
+		WithTheme(theme).
+		WithWidth(80).
+		WithHeight(25).
+		WithKeyMap(getFormKeyMap())
 }

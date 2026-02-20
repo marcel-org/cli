@@ -5,6 +5,7 @@ import (
 	"marcel-cli/models"
 	"marcel-cli/storage"
 	"marcel-cli/ui/components"
+	"time"
 
 	"github.com/charmbracelet/bubbles/list"
 	"github.com/charmbracelet/bubbles/spinner"
@@ -24,7 +25,16 @@ const (
 	QuestFormView
 	JourneyFormView
 	HabitFormView
+	EventFormView
 )
+
+type clearMessageMsg struct{}
+
+func clearMessageAfter(d time.Duration) tea.Cmd {
+	return tea.Tick(d, func(t time.Time) tea.Msg {
+		return clearMessageMsg{}
+	})
+}
 
 type Model struct {
 	storage           *storage.Storage
@@ -46,14 +56,17 @@ type Model struct {
 	confirmQuest      *models.Quest
 	confirmHabit      *models.Habit
 	confirmJourney    *models.Journey
+	confirmEvent      *models.Event
 	confirmSelected   bool
 	selectedJourney   *models.Journey
 	questForm         *huh.Form
 	journeyForm       *huh.Form
 	habitForm         *huh.Form
-	questFormData     QuestForm
-	journeyFormData   JourneyForm
-	habitFormData     HabitForm
+	eventForm         *huh.Form
+	questFormData     *QuestForm
+	journeyFormData   *JourneyForm
+	habitFormData     *HabitForm
+	eventFormData     *EventForm
 }
 
 func NewModel() (*Model, error) {

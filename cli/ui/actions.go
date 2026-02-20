@@ -2,6 +2,7 @@ package ui
 
 import (
 	"fmt"
+	"marcel-cli/api"
 	"marcel-cli/models"
 	"strings"
 	"time"
@@ -9,13 +10,13 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-func (m Model) toggleQuest(quest models.Quest) Model {
+func (m Model) toggleQuest(quest models.Quest) (Model, tea.Cmd) {
 	newDone := !quest.Done
 
 	_, err := m.storage.GetAPIClient().ToggleQuest(quest.ID, newDone)
 	if err != nil {
 		m.message = fmt.Sprintf("Failed to toggle quest: %v", err)
-		return m
+		return m, nil
 	}
 
 	for i := range m.data.Journeys {
@@ -34,7 +35,7 @@ func (m Model) toggleQuest(quest models.Quest) Model {
 		m.message = "Quest marked as incomplete"
 	}
 
-	return m
+	return m, clearMessageAfter(1 * time.Second)
 }
 
 func (m Model) showDeleteConfirm(quest models.Quest) Model {
@@ -44,10 +45,10 @@ func (m Model) showDeleteConfirm(quest models.Quest) Model {
 	return m
 }
 
-func (m Model) confirmDeleteQuest() Model {
+func (m Model) confirmDeleteQuest() (Model, tea.Cmd) {
 	if m.confirmQuest == nil {
 		m.mode = QuestListView
-		return m
+		return m, nil
 	}
 
 	err := m.storage.GetAPIClient().DeleteQuest(m.confirmQuest.ID)
@@ -55,7 +56,7 @@ func (m Model) confirmDeleteQuest() Model {
 		m.message = fmt.Sprintf("Failed to delete quest: %v", err)
 		m.mode = QuestListView
 		m.confirmQuest = nil
-		return m
+		return m, nil
 	}
 
 	for i := range m.data.Journeys {
@@ -73,13 +74,13 @@ func (m Model) confirmDeleteQuest() Model {
 	m.mode = QuestListView
 	m.confirmQuest = nil
 
-	return m
+	return m, clearMessageAfter(1 * time.Second)
 }
 
-func (m Model) confirmDeleteHabit() Model {
+func (m Model) confirmDeleteHabit() (Model, tea.Cmd) {
 	if m.confirmHabit == nil {
 		m.mode = QuestListView
-		return m
+		return m, nil
 	}
 
 	err := m.storage.GetAPIClient().DeleteHabit(m.confirmHabit.ID)
@@ -87,7 +88,7 @@ func (m Model) confirmDeleteHabit() Model {
 		m.message = fmt.Sprintf("Failed to delete habit: %v", err)
 		m.mode = QuestListView
 		m.confirmHabit = nil
-		return m
+		return m, nil
 	}
 
 	var newHabits []models.Habit
@@ -103,13 +104,13 @@ func (m Model) confirmDeleteHabit() Model {
 	m.mode = QuestListView
 	m.confirmHabit = nil
 
-	return m
+	return m, clearMessageAfter(1 * time.Second)
 }
 
-func (m Model) confirmDeleteJourney() Model {
+func (m Model) confirmDeleteJourney() (Model, tea.Cmd) {
 	if m.confirmJourney == nil {
 		m.mode = QuestListView
-		return m
+		return m, nil
 	}
 
 	err := m.storage.GetAPIClient().DeleteJourney(m.confirmJourney.ID)
@@ -117,7 +118,7 @@ func (m Model) confirmDeleteJourney() Model {
 		m.message = fmt.Sprintf("Failed to delete journey: %v", err)
 		m.mode = QuestListView
 		m.confirmJourney = nil
-		return m
+		return m, nil
 	}
 
 	var newJourneys []models.Journey
@@ -133,21 +134,34 @@ func (m Model) confirmDeleteJourney() Model {
 	m.mode = QuestListView
 	m.confirmJourney = nil
 
-	return m
+	return m, clearMessageAfter(1 * time.Second)
 }
 
 func (m Model) cancelDelete() Model {
+	returnToCalendar := m.confirmEvent != nil
+
 	m.mode = QuestListView
 	m.confirmQuest = nil
 	m.confirmHabit = nil
 	m.confirmJourney = nil
+	m.confirmEvent = nil
 	m.message = "Deletion cancelled"
+
+	if returnToCalendar {
+		m.currentSection = "calendar"
+	}
+
 	return m
 }
 
 func (m Model) createNewQuest() (Model, tea.Cmd) {
-	m.questFormData = QuestForm{}
-	m.questForm = BuildQuestForm(&m.questFormData, m.data.Journeys)
+	m.questFormData = &QuestForm{
+		Title:      "",
+		Note:       "",
+		Difficulty: "medium",
+		JourneyID:  nil,
+	}
+	m.questForm = BuildQuestForm(m.questFormData, m.data.Journeys)
 	m.mode = QuestFormView
 	return m, m.questForm.Init()
 }
@@ -157,22 +171,33 @@ func (m Model) createNewQuestInJourney() (Model, tea.Cmd) {
 		return m, nil
 	}
 
-	m.questFormData = QuestForm{}
-	m.questForm = BuildQuestForm(&m.questFormData, m.data.Journeys)
+	m.questFormData = &QuestForm{
+		Title:      "",
+		Note:       "",
+		Difficulty: "medium",
+		JourneyID:  nil,
+	}
+	m.questForm = BuildQuestForm(m.questFormData, m.data.Journeys)
 	m.mode = QuestFormView
 	return m, m.questForm.Init()
 }
 
 func (m Model) createNewHabit() (Model, tea.Cmd) {
-	m.habitFormData = HabitForm{}
-	m.habitForm = BuildHabitForm(&m.habitFormData)
+	m.habitFormData = &HabitForm{
+		Name:        "",
+		CycleType:   "daily",
+		CycleConfig: nil,
+	}
+	m.habitForm = BuildHabitForm(m.habitFormData)
 	m.mode = HabitFormView
 	return m, m.habitForm.Init()
 }
 
 func (m Model) createNewJourney() (Model, tea.Cmd) {
-	m.journeyFormData = JourneyForm{}
-	m.journeyForm = BuildJourneyForm(&m.journeyFormData)
+	m.journeyFormData = &JourneyForm{
+		Name: "",
+	}
+	m.journeyForm = BuildJourneyForm(m.journeyFormData)
 	m.mode = JourneyFormView
 	return m, m.journeyForm.Init()
 }
@@ -199,13 +224,14 @@ func (m Model) refreshData() Model {
 	m.questList = newQuestList(m.data, m.width-4, m.height-10)
 	m.habitList = newHabitList(m.data, m.width-4, m.height-10)
 	m.journeyList = newJourneyList(m.data, m.width-4, m.height-10)
+	m.calendar.SetEvents(m.data.Events)
 	m.mode = QuestListView
 	m.message = "✓ Data refreshed!"
 
 	return m
 }
 
-func (m Model) toggleHabit(habit models.Habit) Model {
+func (m Model) toggleHabit(habit models.Habit) (Model, tea.Cmd) {
 	completedToday := false
 	today := fmt.Sprintf("%d-%02d-%02d", time.Now().Year(), time.Now().Month(), time.Now().Day())
 	for _, d := range habit.Completed {
@@ -239,7 +265,7 @@ func (m Model) toggleHabit(habit models.Habit) Model {
 		} else {
 			m.message = fmt.Sprintf("Failed to toggle habit: %v", err)
 		}
-		return m
+		return m, nil
 	}
 
 	for i := range m.data.Habits {
@@ -268,7 +294,7 @@ func (m Model) toggleHabit(habit models.Habit) Model {
 		m.message = "Habit marked as incomplete"
 	}
 
-	return m
+	return m, clearMessageAfter(1 * time.Second)
 }
 
 func (m Model) showDeleteConfirmHabit(habit models.Habit) Model {
@@ -285,12 +311,72 @@ func (m Model) showDeleteConfirmJourney(journey models.Journey) Model {
 	return m
 }
 
+func (m Model) createNewEvent() (Model, tea.Cmd) {
+	m.eventFormData = &EventForm{
+		Title:       "",
+		Date:        m.calendar.GetSelectedDate().Format("2006-01-02"),
+		Time:        "",
+		EndTime:     "",
+		Location:    "",
+		Description: "",
+	}
+	m.eventForm = BuildEventForm(m.eventFormData)
+	m.mode = EventFormView
+	return m, m.eventForm.Init()
+}
+
+func (m Model) showDeleteConfirmEvent(event *models.Event) Model {
+	m.mode = ConfirmDeleteView
+	m.confirmEvent = event
+	m.confirmSelected = false
+	return m
+}
+
+func (m Model) confirmDeleteEvent() (Model, tea.Cmd) {
+	if m.confirmEvent == nil {
+		m.mode = QuestListView
+		m.currentSection = "calendar"
+		return m, nil
+	}
+
+	err := m.storage.GetAPIClient().DeleteEvent(m.confirmEvent.ID)
+	if err != nil {
+		m.message = fmt.Sprintf("Failed to delete event: %v", err)
+		m.mode = QuestListView
+		m.currentSection = "calendar"
+		m.confirmEvent = nil
+		return m, nil
+	}
+
+	var newEvents []models.Event
+	for _, e := range m.data.Events {
+		if e.ID != m.confirmEvent.ID {
+			newEvents = append(newEvents, e)
+		}
+	}
+	m.data.Events = newEvents
+	m.calendar.SetEvents(newEvents)
+
+	m.message = "Event deleted successfully"
+	m.mode = QuestListView
+	m.currentSection = "calendar"
+	m.confirmEvent = nil
+	return m, clearMessageAfter(1 * time.Second)
+}
+
 func (m Model) handleFormCompletion() (tea.Model, tea.Cmd) {
 	var returnMode ViewMode = QuestListView
 	var message string
 
 	switch m.mode {
 	case QuestFormView:
+		if m.questFormData.Title == "" {
+			message = "Quest title cannot be empty"
+			m.mode = returnMode
+			m.message = message
+			return m, nil
+		}
+
 		var journeyID *int
 		if m.questFormData.JourneyID != nil && *m.questFormData.JourneyID != 0 {
 			journeyID = m.questFormData.JourneyID
@@ -307,27 +393,45 @@ func (m Model) handleFormCompletion() (tea.Model, tea.Cmd) {
 
 		if err != nil {
 			message = fmt.Sprintf("Failed to create quest: %v", err)
-		} else {
-			message = fmt.Sprintf("✓ Quest created: %s", quest.Title)
+			m.mode = returnMode
+			m.message = message
+			return m, nil
 		}
+
+		message = fmt.Sprintf("✓ Quest created: %s", quest.Title)
 
 		if m.selectedJourney != nil {
 			returnMode = JourneyDetailView
 		}
 
 	case JourneyFormView:
+		if m.journeyFormData.Name == "" {
+			message = "Journey name cannot be empty"
+			m.mode = returnMode
+			return m, nil
+		}
+
 		journey, err := m.storage.GetAPIClient().CreateJourney(m.journeyFormData.Name)
 		if err != nil {
 			message = fmt.Sprintf("Failed to create journey: %v", err)
-		} else {
-			message = fmt.Sprintf("✓ Journey created: %s", journey.Name)
+			m.mode = returnMode
+			m.message = message
+			return m, nil
 		}
+
+		message = fmt.Sprintf("✓ Journey created: %s", journey.Name)
 
 		if m.selectedJourney != nil {
 			returnMode = JourneyDetailView
 		}
 
 	case HabitFormView:
+		if m.habitFormData.Name == "" {
+			message = "Habit name cannot be empty"
+			m.mode = returnMode
+			return m, nil
+		}
+
 		habit, err := m.storage.GetAPIClient().CreateHabit(
 			m.habitFormData.Name,
 			m.habitFormData.CycleType,
@@ -336,12 +440,64 @@ func (m Model) handleFormCompletion() (tea.Model, tea.Cmd) {
 
 		if err != nil {
 			message = fmt.Sprintf("Failed to create habit: %v", err)
-		} else {
-			message = fmt.Sprintf("✓ Habit created: %s", habit.Name)
+			m.mode = returnMode
+			m.message = message
+			return m, nil
 		}
+
+		message = fmt.Sprintf("✓ Habit created: %s", habit.Name)
+
+	case EventFormView:
+		if m.eventFormData.Title == "" {
+			message = "Event title cannot be empty"
+			m.mode = returnMode
+			m.currentSection = "calendar"
+			return m, nil
+		}
+
+		var timePtr, endTimePtr, locationPtr, descriptionPtr *string
+		if m.eventFormData.Time != "" {
+			timePtr = &m.eventFormData.Time
+		}
+		if m.eventFormData.EndTime != "" {
+			endTimePtr = &m.eventFormData.EndTime
+		}
+		if m.eventFormData.Location != "" {
+			locationPtr = &m.eventFormData.Location
+		}
+		if m.eventFormData.Description != "" {
+			descriptionPtr = &m.eventFormData.Description
+		}
+
+		event, err := m.storage.GetAPIClient().CreateEvent(api.CreateEventRequest{
+			Title:       m.eventFormData.Title,
+			Date:        m.eventFormData.Date,
+			Time:        timePtr,
+			EndTime:     endTimePtr,
+			Location:    locationPtr,
+			Description: descriptionPtr,
+		})
+
+		if err != nil {
+			message = fmt.Sprintf("Failed to create event: %v", err)
+			m.mode = returnMode
+			m.currentSection = "calendar"
+			m.message = message
+			return m, nil
+		}
+
+		message = fmt.Sprintf("✓ Event created: %s", event.Title)
+
+		m.currentSection = "calendar"
+		returnMode = QuestListView
 	}
 
 	m = m.refreshData()
+
+	if m.mode == ErrorView {
+		return m, nil
+	}
+
 	if m.selectedJourney != nil && returnMode == JourneyDetailView {
 		for _, j := range m.data.Journeys {
 			if j.ID == m.selectedJourney.ID {
@@ -356,5 +512,5 @@ func (m Model) handleFormCompletion() (tea.Model, tea.Cmd) {
 	m.message = message
 	m.needsRedraw = true
 
-	return m, nil
+	return m, clearMessageAfter(1 * time.Second)
 }

@@ -32,6 +32,8 @@ func (m Model) View() string {
 		return m.renderFormView(m.journeyForm)
 	case HabitFormView:
 		return m.renderFormView(m.habitForm)
+	case EventFormView:
+		return m.renderFormView(m.eventForm)
 	}
 
 	return ""
@@ -40,7 +42,6 @@ func (m Model) View() string {
 func (m Model) renderQuestListView() string {
 	var headerText string
 	var content string
-	var help string
 
 	tabs := renderTabs(m.currentSection, m.width)
 
@@ -48,23 +49,18 @@ func (m Model) renderQuestListView() string {
 	case "quests":
 		headerText = "Marcel - Quests"
 		content = m.questList.View()
-		help = "\n" + questListHelp()
 	case "habits":
 		headerText = "Marcel - Habits"
 		content = m.habitList.View()
-		help = "\n" + habitListHelp()
 	case "journeys":
 		headerText = "Marcel - Journeys"
 		content = m.journeyList.View()
-		help = "\n" + journeyListHelp()
 	case "calendar":
 		headerText = "Marcel - Calendar"
 		content = m.calendar.View()
-		help = "\n" + calendarHelp()
 	default:
 		headerText = "Marcel - Quests"
 		content = m.questList.View()
-		help = "\n" + questListHelp()
 	}
 
 	header := HeaderStyle.Width(m.width).Render(headerText)
@@ -88,7 +84,6 @@ func (m Model) renderQuestListView() string {
 		tabs,
 		content,
 		statusBar,
-		help,
 	)
 }
 
@@ -118,85 +113,6 @@ func renderTabs(currentSection string, width int) string {
 	)
 
 	return lipgloss.NewStyle().Width(width).Render(tabs)
-}
-
-func habitListHelp() string {
-	helpItems := []string{
-		"↑/k up",
-		"↓/j down",
-		"tab next",
-		"shift+tab prev",
-		"space toggle",
-		"d delete",
-		"r refresh",
-		"? help",
-		"q quit",
-	}
-
-	var styledItems []string
-	for _, item := range helpItems {
-		parts := strings.SplitN(item, " ", 2)
-		if len(parts) == 2 {
-			keyStyle := lipgloss.NewStyle().Foreground(brandOrange).Bold(true)
-			descStyle := lipgloss.NewStyle().Foreground(lightGray)
-			styledItems = append(styledItems, keyStyle.Render(parts[0])+" "+descStyle.Render(parts[1]))
-		}
-	}
-
-	return HelpStyle.Render(strings.Join(styledItems, "  •  "))
-}
-
-func journeyListHelp() string {
-	helpItems := []string{
-		"↑/k up",
-		"↓/j down",
-		"tab next",
-		"shift+tab prev",
-		"d delete",
-		"r refresh",
-		"? help",
-		"q quit",
-	}
-
-	var styledItems []string
-	for _, item := range helpItems {
-		parts := strings.SplitN(item, " ", 2)
-		if len(parts) == 2 {
-			keyStyle := lipgloss.NewStyle().Foreground(brandOrange).Bold(true)
-			descStyle := lipgloss.NewStyle().Foreground(lightGray)
-			styledItems = append(styledItems, keyStyle.Render(parts[0])+" "+descStyle.Render(parts[1]))
-		}
-	}
-
-	return HelpStyle.Render(strings.Join(styledItems, "  •  "))
-}
-
-func calendarHelp() string {
-	helpItems := []string{
-		"←/h left",
-		"→/l right",
-		"↑/k up",
-		"↓/j down",
-		"ctrl+← prev month",
-		"ctrl+→ next month",
-		"t today",
-		"tab next section",
-		"shift+tab prev section",
-		"? help",
-		"q quit",
-	}
-
-	var styledItems []string
-	for _, item := range helpItems {
-		parts := strings.SplitN(item, " ", 2)
-		if len(parts) == 2 {
-			keyStyle := lipgloss.NewStyle().Foreground(brandOrange).Bold(true)
-			descStyle := lipgloss.NewStyle().Foreground(lightGray)
-			styledItems = append(styledItems, keyStyle.Render(parts[0])+" "+descStyle.Render(parts[1]))
-		}
-	}
-
-	return HelpStyle.Render(strings.Join(styledItems, "  •  "))
 }
 
 func (m Model) renderLoadingView() string {
@@ -313,6 +229,9 @@ func (m Model) renderConfirmDeleteView() string {
 	} else if m.confirmJourney != nil {
 		title = "Delete Journey?"
 		itemName = m.confirmJourney.Name
+	} else if m.confirmEvent != nil {
+		title = "Delete Event?"
+		itemName = m.confirmEvent.Title
 	} else {
 		return ""
 	}
@@ -408,34 +327,10 @@ func (m Model) renderJourneyDetailView() string {
 		statusBar = "\n" + StatusBarStyle.Width(m.width).Render(msgStyle.Render(m.message))
 	}
 
-	helpItems := []string{
-		"↑/k up",
-		"↓/j down",
-		"space toggle",
-		"d delete",
-		"n new",
-		"esc back",
-		"? help",
-		"q quit",
-	}
-
-	var styledItems []string
-	for _, item := range helpItems {
-		parts := strings.SplitN(item, " ", 2)
-		if len(parts) == 2 {
-			keyStyle := lipgloss.NewStyle().Foreground(brandOrange).Bold(true)
-			descStyle := lipgloss.NewStyle().Foreground(lightGray)
-			styledItems = append(styledItems, keyStyle.Render(parts[0])+" "+descStyle.Render(parts[1]))
-		}
-	}
-
-	help := "\n" + HelpStyle.Render(strings.Join(styledItems, "  •  "))
-
 	return lipgloss.JoinVertical(
 		lipgloss.Left,
 		header,
 		content,
 		statusBar,
-		help,
 	)
 }

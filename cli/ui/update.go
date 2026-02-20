@@ -14,7 +14,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	// Handle forms first - they need all messages
-	if m.mode == QuestFormView || m.mode == JourneyFormView || m.mode == HabitFormView {
+	if m.mode == QuestFormView || m.mode == JourneyFormView || m.mode == HabitFormView || m.mode == EventFormView {
 		return m.handleFormUpdate(msg)
 	}
 
@@ -64,6 +64,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		var cmd tea.Cmd
 		m.spinner, cmd = m.spinner.Update(msg)
 		cmds = append(cmds, cmd)
+
+	case clearMessageMsg:
+		m.message = ""
 	}
 
 	return m, tea.Batch(cmds...)

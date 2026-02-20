@@ -17,6 +17,7 @@ type Calendar struct {
 	width          int
 	height         int
 	weekStartDay   string
+	focusEventList bool
 }
 
 func NewCalendar() *Calendar {
@@ -111,6 +112,42 @@ func (c *Calendar) PrevEvent() {
 	}
 }
 
+func (c *Calendar) FocusEventList() {
+	eventsOnDate := c.getEventsForDate(c.selectedDate)
+	if len(eventsOnDate) > 0 {
+		c.focusEventList = true
+		c.selectedEvent = 0
+	}
+}
+
+func (c *Calendar) FocusMonthView() {
+	c.focusEventList = false
+}
+
+func (c *Calendar) IsFocusedOnEventList() bool {
+	return c.focusEventList
+}
+
+func (c *Calendar) NavigateEventListUp() {
+	if !c.focusEventList {
+		return
+	}
+	eventsOnDate := c.getEventsForDate(c.selectedDate)
+	if len(eventsOnDate) > 0 && c.selectedEvent > 0 {
+		c.selectedEvent--
+	}
+}
+
+func (c *Calendar) NavigateEventListDown() {
+	if !c.focusEventList {
+		return
+	}
+	eventsOnDate := c.getEventsForDate(c.selectedDate)
+	if len(eventsOnDate) > 0 && c.selectedEvent < len(eventsOnDate)-1 {
+		c.selectedEvent++
+	}
+}
+
 func (c *Calendar) updateCurrentDateIfNeeded() {
 	if c.selectedDate.Month() != c.currentDate.Month() ||
 		c.selectedDate.Year() != c.currentDate.Year() {
@@ -121,6 +158,7 @@ func (c *Calendar) updateCurrentDateIfNeeded() {
 func (c *Calendar) View() string {
 	var sb strings.Builder
 
+	sb.WriteString("\n")
 	header := c.renderHeader()
 	sb.WriteString(header)
 	sb.WriteString("\n\n")
@@ -183,8 +221,6 @@ func (c *Calendar) renderHeader() string {
 
 	headerStyle := lipgloss.NewStyle().
 		Bold(true).
-		Align(lipgloss.Center).
-		Width(c.width - 4).
 		Foreground(lipgloss.Color("#fab387"))
 
 	return headerStyle.Render(title)
@@ -227,6 +263,7 @@ func (c *Calendar) renderSelectedDateEvents() string {
 	sb.WriteString("\n\n")
 
 	events := c.getEventsForDate(c.selectedDate)
+
 	if len(events) == 0 {
 		mutedStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("#6c7086")).Italic(true)
 		sb.WriteString(mutedStyle.Render("No events scheduled"))
@@ -234,7 +271,8 @@ func (c *Calendar) renderSelectedDateEvents() string {
 		for i, event := range events {
 			eventStyle := lipgloss.NewStyle().Padding(0, 1)
 
-			if i == c.selectedEvent {
+			// Only highlight when event list is focused
+			if c.focusEventList && i == c.selectedEvent {
 				eventStyle = eventStyle.Background(lipgloss.Color("#fab387")).Foreground(lipgloss.Color("#1e1e2e"))
 			}
 
@@ -255,12 +293,6 @@ func (c *Calendar) renderSelectedDateEvents() string {
 
 			sb.WriteString(eventStyle.Render(eventText))
 			sb.WriteString("\n")
-		}
-
-		if len(events) > 1 {
-			sb.WriteString("\n")
-			helpStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("#6c7086"))
-			sb.WriteString(helpStyle.Render("Tab/Shift+Tab to cycle events"))
 		}
 	}
 

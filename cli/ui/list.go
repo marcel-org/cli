@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"marcel-cli/models"
-	"strings"
 	"time"
 
 	"github.com/charmbracelet/bubbles/list"
@@ -26,7 +25,7 @@ func (i questItem) Title() string {
 }
 
 func (i questItem) Description() string {
-	reward := fmt.Sprintf("⚡ +%d  🪙 +%d", i.quest.XPReward, i.quest.GoldReward)
+	reward := fmt.Sprintf("⚡ +%d  💰 +%d", i.quest.XPReward, i.quest.GoldReward)
 	if i.journey != "" {
 		return fmt.Sprintf("%s • %s", i.journey, reward)
 	}
@@ -60,7 +59,7 @@ func (d questDelegate) Render(w io.Writer, m list.Model, index int, listItem lis
 		checkbox = "☑"
 	}
 
-	reward := fmt.Sprintf("⚡ +%d  🪙 +%d", i.quest.XPReward, i.quest.GoldReward)
+	reward := fmt.Sprintf("⚡ +%d  💰 +%d", i.quest.XPReward, i.quest.GoldReward)
 	journey := ""
 	if i.journey != "" && i.journey != "My Quests" {
 		journey = fmt.Sprintf("[%s] ", i.journey)
@@ -123,33 +122,6 @@ func newQuestList(data *models.AppData, width, height int) list.Model {
 	l.Styles.FilterCursor = lipgloss.NewStyle().Foreground(brandOrange)
 
 	return l
-}
-
-func questListHelp() string {
-	helpItems := []string{
-		"↑/k up",
-		"↓/j down",
-		"tab next",
-		"shift+tab prev",
-		"space toggle",
-		"d delete",
-		"r refresh",
-		"n new",
-		"? help",
-		"q quit",
-	}
-
-	var styledItems []string
-	for _, item := range helpItems {
-		parts := strings.SplitN(item, " ", 2)
-		if len(parts) == 2 {
-			keyStyle := lipgloss.NewStyle().Foreground(brandOrange).Bold(true)
-			descStyle := lipgloss.NewStyle().Foreground(lightGray)
-			styledItems = append(styledItems, keyStyle.Render(parts[0])+" "+descStyle.Render(parts[1]))
-		}
-	}
-
-	return HelpStyle.Render(strings.Join(styledItems, "  •  "))
 }
 
 type habitItem struct {

@@ -118,6 +118,6 @@ func RenderQuestCheckbox(done bool) string {
 
 func RenderReward(xp, gold int) string {
 	return MutedStyle.Render(
-		fmt.Sprintf(" ⚡ +%d  🪙 +%d", xp, gold),
+		fmt.Sprintf(" ⚡ +%d  💰 +%d", xp, gold),
 	)
 }

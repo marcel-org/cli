@@ -30,7 +30,7 @@ func (m Model) handleQuestListKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 
 	case " ", "enter":
 		if item, ok := m.questList.SelectedItem().(questItem); ok {
-			return m.toggleQuest(item.quest), nil
+			return m.toggleQuest(item.quest)
 		}
 
 	case "d":
@@ -72,7 +72,7 @@ func (m Model) handleHabitListKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 
 	case " ", "enter":
 		if item, ok := m.habitList.SelectedItem().(habitItem); ok {
-			return m.toggleHabit(item.habit), nil
+			return m.toggleHabit(item.habit)
 		}
 
 	case "d":
@@ -132,6 +132,33 @@ func (m Model) handleJourneyListKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) handleCalendarKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+	if m.calendar.IsFocusedOnEventList() {
+		switch msg.String() {
+		case "ctrl+c", "q":
+			return m, tea.Quit
+
+		case "esc":
+			m.calendar.FocusMonthView()
+			return m, nil
+
+		case "up", "k":
+			m.calendar.NavigateEventListUp()
+			return m, nil
+
+		case "down", "j":
+			m.calendar.NavigateEventListDown()
+			return m, nil
+
+		case "d":
+			event := m.calendar.GetSelectedEvent()
+			if event != nil {
+				return m.showDeleteConfirmEvent(event), nil
+			}
+			return m, nil
+		}
+		return m, nil
+	}
+
 	switch msg.String() {
 	case "ctrl+c", "q":
 		return m, tea.Quit
@@ -150,6 +177,13 @@ func (m Model) handleCalendarKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 
 	case "r":
 		return m.refreshData(), nil
+
+	case "n":
+		return m.createNewEvent()
+
+	case "enter":
+		m.calendar.FocusEventList()
+		return m, nil
 
 	case "left", "h":
 		m.calendar.NavigateLeft()
@@ -205,7 +239,7 @@ func (m Model) handleJourneyDetailKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 
 	case " ", "enter":
 		if item, ok := m.journeyQuestList.SelectedItem().(questItem); ok {
-			return m.toggleQuest(item.quest), nil
+			return m.toggleQuest(item.quest)
 		}
 
 	case "d":
@@ -251,11 +285,13 @@ func (m Model) handleConfirmDeleteKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case "enter", " ":
 		if m.confirmSelected {
 			if m.confirmQuest != nil {
-				return m.confirmDeleteQuest(), nil
+				return m.confirmDeleteQuest()
 			} else if m.confirmHabit != nil {
-				return m.confirmDeleteHabit(), nil
+				return m.confirmDeleteHabit()
 			} else if m.confirmJourney != nil {
-				return m.confirmDeleteJourney(), nil
+				return m.confirmDeleteJourney()
+			} else if m.confirmEvent != nil {
+				return m.confirmDeleteEvent()
 			}
 		}
 		return m.cancelDelete(), nil
@@ -281,6 +317,10 @@ func (m Model) handleFormUpdate(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case HabitFormView:
 		form = m.habitForm
 		returnMode = QuestListView
+	case EventFormView:
+		form = m.eventForm
+		returnMode = QuestListView
+		m.currentSection = "calendar"
 	}
 
 	if form == nil {
@@ -297,6 +337,8 @@ func (m Model) handleFormUpdate(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.journeyForm = f
 		case HabitFormView:
 			m.habitForm = f
+		case EventFormView:
+			m.eventForm = f
 		}
 
 		if f.State == huh.StateCompleted {
@@ -305,6 +347,7 @@ func (m Model) handleFormUpdate(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		if f.State == huh.StateAborted {
 			m.mode = returnMode
+			m.message = "Form cancelled"
 			return m, nil
 		}
 	}
