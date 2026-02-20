@@ -84,10 +84,14 @@ func (d questDelegate) Render(w io.Writer, m list.Model, index int, listItem lis
 			str = title + meta
 		}
 	} else {
+		rewardStyled := lipgloss.NewStyle().
+			Foreground(gray).
+			Render(fmt.Sprintf(" %s%s", journey, reward))
+
 		if isSelected {
-			str = SelectedItemStyle.Render(fmt.Sprintf("%s %s %s%s", checkbox, i.quest.Title, journey, reward))
+			str = SelectedItemStyle.Render(fmt.Sprintf("%s %s", checkbox, i.quest.Title)) + rewardStyled
 		} else {
-			str = NormalItemStyle.Render(fmt.Sprintf("%s %s %s%s", checkbox, i.quest.Title, journey, reward))
+			str = NormalItemStyle.Render(fmt.Sprintf("%s %s", checkbox, i.quest.Title)) + rewardStyled
 		}
 	}
 
