@@ -70,7 +70,7 @@ func (d questDelegate) Render(w io.Writer, m list.Model, index int, listItem lis
 		title := lipgloss.NewStyle().
 			Foreground(gray).
 			Strikethrough(true).
-			Render(fmt.Sprintf("%s%s", checkbox, i.quest.Title))
+			Render(fmt.Sprintf("%s %s", checkbox, i.quest.Title))
 
 		meta := lipgloss.NewStyle().
 			Foreground(gray).
@@ -85,9 +85,9 @@ func (d questDelegate) Render(w io.Writer, m list.Model, index int, listItem lis
 		}
 	} else {
 		if isSelected {
-			str = SelectedItemStyle.Render(fmt.Sprintf("%s%s %s%s", checkbox, i.quest.Title, journey, reward))
+			str = SelectedItemStyle.Render(fmt.Sprintf("%s %s %s%s", checkbox, i.quest.Title, journey, reward))
 		} else {
-			str = NormalItemStyle.Render(fmt.Sprintf("%s%s %s%s", checkbox, i.quest.Title, journey, reward))
+			str = NormalItemStyle.Render(fmt.Sprintf("%s %s %s%s", checkbox, i.quest.Title, journey, reward))
 		}
 	}
 
