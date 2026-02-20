@@ -30,6 +30,7 @@ type Model struct {
 	height        int
 	allQuests     []models.Quest
 	loading       bool
+	lastKey       string
 }
 
 func NewModel() (*Model, error) {
@@ -102,23 +103,44 @@ func (m Model) handleKeypress(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) handleQuestViewKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
-	switch msg.String() {
+	key := msg.String()
+
+	switch key {
 	case "ctrl+c", "q":
 		return m, tea.Quit
 	case "up", "k":
 		if m.questCursor > 0 {
 			m.questCursor--
 		}
+		m.lastKey = ""
 	case "down", "j":
 		if m.questCursor < len(m.allQuests)-1 {
 			m.questCursor++
 		}
+		m.lastKey = ""
+	case "g":
+		if m.lastKey == "g" {
+			m.questCursor = 0
+			m.lastKey = ""
+		} else {
+			m.lastKey = "g"
+		}
+	case "G":
+		if len(m.allQuests) > 0 {
+			m.questCursor = len(m.allQuests) - 1
+		}
+		m.lastKey = ""
 	case " ":
+		m.lastKey = ""
 		return m.toggleCurrentQuest(), nil
 	case "r":
+		m.lastKey = ""
 		return m.refreshQuests(), nil
 	case "?":
+		m.lastKey = ""
 		m.mode = HelpView
+	default:
+		m.lastKey = ""
 	}
 	return m, nil
 }
@@ -166,7 +188,7 @@ func (m Model) toggleCurrentQuest() Model {
 	}
 
 	if newDone {
-		m.message = "Quest completed! 🎉"
+		m.message = "Quest completed!"
 	} else {
 		m.message = "Quest marked as incomplete"
 	}
@@ -240,7 +262,7 @@ var (
 )
 
 func (m Model) renderQuestView() string {
-	title := titleStyle.Render("🎮 Marcel CLI - Your Quests")
+	title := titleStyle.Render("Marcel CLI - Your Quests")
 
 	var content string
 	if len(m.allQuests) == 0 {
@@ -266,10 +288,10 @@ func (m Model) renderQuestView() string {
 					cursor = ">"
 				}
 
-				checkbox := "☐"
+				checkbox := "[ ]"
 				questText := quest.Title
 				if quest.Done {
-					checkbox = "☑"
+					checkbox = "[x]"
 					questText = completedStyle.Render(questText)
 				} else if questIndex == m.questCursor {
 					questText = selectedStyle.Render(questText)
@@ -294,7 +316,7 @@ func (m Model) renderQuestView() string {
 		}
 	}
 
-	help := mutedStyle.Render("\n\n↑/↓ navigate  • space toggle  • r refresh  • ? help  • q quit")
+	help := mutedStyle.Render("\n\nj/k or arrows navigate  • gg/G jump  • space toggle  • r refresh  • ? help  • q quit")
 
 	return title + "\n" + content + statusLine + help
 }
@@ -304,7 +326,9 @@ func (m Model) renderHelpView() string {
 
 	help := `
 Quest View:
-  ↑/↓, j/k    Navigate quests
+  j/k, arrows Navigate quests
+  gg          Jump to top
+  G           Jump to bottom
   Space       Toggle quest completion
   r           Refresh quests from server
   ?           Show/hide help
@@ -332,7 +356,7 @@ Authentication:
 }
 
 func (m Model) renderErrorView() string {
-	title := errorStyle.Render("⚠️  Error")
+	title := errorStyle.Render("Error")
 
 	content := m.errorMessage
 

@@ -40,7 +40,7 @@ func main() {
 }
 
 func showHelpText() {
-	fmt.Println(`🎮 Marcel CLI - Gamified productivity TUI application
+	fmt.Println(`Marcel CLI - Gamified productivity TUI application
 
 USAGE:
     marcel [OPTIONS]
@@ -52,7 +52,9 @@ OPTIONS:
 KEYBOARD CONTROLS:
 
 Quest View:
-    ↑/↓, j/k     Navigate quests
+    j/k, arrows  Navigate quests
+    gg           Jump to top
+    G            Jump to bottom
     Space        Toggle quest completion
     ?            Show/hide help
     q, Ctrl+C    Quit
