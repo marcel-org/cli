@@ -28,6 +28,11 @@ func New() (*Storage, error) {
 func (s *Storage) Load() (*models.AppData, error) {
 	data := models.NewAppData()
 
+	journeys, err := s.apiClient.GetJourneys()
+	if err != nil {
+		return &data, err
+	}
+
 	quests, err := s.apiClient.GetQuests()
 	if err != nil {
 		return &data, err
@@ -52,13 +57,10 @@ func (s *Storage) Load() (*models.AppData, error) {
 		})
 	}
 
-	for journeyID, journeyQuests := range questsByJourney {
-		if len(journeyQuests) > 0 {
-			data.Journeys = append(data.Journeys, models.Journey{
-				ID:     journeyID,
-				Name:   journeyQuests[0].Title,
-				Quests: journeyQuests,
-			})
+	for _, journey := range journeys {
+		journey.Quests = questsByJourney[journey.ID]
+		if len(journey.Quests) > 0 || journey.ID != 0 {
+			data.Journeys = append(data.Journeys, journey)
 		}
 	}
 

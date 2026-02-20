@@ -5,10 +5,14 @@ A TUI (Terminal User Interface) application for viewing and managing your Marcel
 ## Features
 
 - 🔐 Secure authentication with Marcel tokens
-- 📋 View your quests organized by journeys
+- 📋 View your quests organized by journeys with beautiful list component
 - ✅ Toggle quest completion with instant sync
-- 🔄 Refresh quests in real-time
-- 🎨 Clean and intuitive interface using Bubble Tea
+- ➕ Create new quests with interactive forms
+- 🗑️ Delete quests with confirmation dialog
+- 🔍 Filter quests in real-time
+- 🔄 Refresh quests from server
+- 🎨 Modern UI with Charmbracelet components (Bubbles, Huh, Lipgloss)
+- ⚡ Smooth animations and loading states with spinners
 - ⚙️ Configuration via environment variables
 
 ## Installation
@@ -64,9 +68,14 @@ marcel
 
 ### Keyboard Controls
 
-**Quest View:**
+**Quest List View:**
 - `↑/↓` or `j/k` - Navigate quests
-- `Space` - Toggle quest completion
+- `gg` - Jump to top
+- `G` - Jump to bottom
+- `/` - Filter quests
+- `Space` or `Enter` - Toggle quest completion
+- `n` - Create new quest
+- `d` - Delete quest (with confirmation)
 - `r` - Refresh quests from server
 - `?` - Show/hide help
 - `q` or `Ctrl+C` - Quit
@@ -123,7 +132,37 @@ Default: `https://api.marcel.my`
 
 - Go 1.25.0
 - [Bubble Tea](https://github.com/charmbracelet/bubbletea) - TUI framework
+- [Bubbles](https://github.com/charmbracelet/bubbles) - TUI components (list, spinner, etc.)
+- [Huh](https://github.com/charmbracelet/huh) - Interactive forms and prompts
 - [Lip Gloss](https://github.com/charmbracelet/lipgloss) - Terminal styling
+
+## Architecture
+
+The CLI is organized with a clean, modular architecture:
+
+```
+cli/
+├── main.go              # Entry point
+├── api/                 # API client
+│   ├── client.go        # HTTP client
+│   ├── quests.go        # Quest endpoints
+│   └── journeys.go      # Journey endpoints
+├── config/              # Configuration
+│   └── config.go        # Config loading
+├── models/              # Data models
+│   └── models.go        # Quest, Journey models
+├── storage/             # Data layer
+│   └── storage.go       # Storage abstraction
+└── ui/                  # UI components
+    ├── model.go         # Main model
+    ├── update.go        # Update logic
+    ├── view.go          # View rendering
+    ├── keys.go          # Keyboard handling
+    ├── actions.go       # User actions
+    ├── list.go          # Quest list component
+    ├── forms.go         # Interactive forms
+    └── styles.go        # Styling definitions
+```
 
 ## License
 
