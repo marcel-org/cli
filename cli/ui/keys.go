@@ -9,12 +9,20 @@ func (m Model) handleQuestListKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case "ctrl+c", "q":
 		return m, tea.Quit
 
+	case "tab":
+		m.currentSection = "habits"
+		return m, nil
+
+	case "shift+tab":
+		m.currentSection = "journeys"
+		return m, nil
+
 	case "?":
 		m.mode = HelpView
 		return m, nil
 
 	case "r":
-		return m.refreshQuests(), nil
+		return m.refreshData(), nil
 
 	case "n":
 		return m.createNewQuest(), nil
@@ -38,12 +46,85 @@ func (m Model) handleQuestListKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
+func (m Model) handleHabitListKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+	switch msg.String() {
+	case "ctrl+c", "q":
+		return m, tea.Quit
+
+	case "tab":
+		m.currentSection = "journeys"
+		return m, nil
+
+	case "shift+tab":
+		m.currentSection = "quests"
+		return m, nil
+
+	case "?":
+		m.mode = HelpView
+		return m, nil
+
+	case "r":
+		return m.refreshData(), nil
+
+	case " ", "enter":
+		if item, ok := m.habitList.SelectedItem().(habitItem); ok {
+			return m.toggleHabit(item.habit), nil
+		}
+
+	case "d":
+		if item, ok := m.habitList.SelectedItem().(habitItem); ok {
+			return m.showDeleteConfirmHabit(item.habit), nil
+		}
+
+	default:
+		var cmd tea.Cmd
+		m.habitList, cmd = m.habitList.Update(msg)
+		return m, cmd
+	}
+
+	return m, nil
+}
+
+func (m Model) handleJourneyListKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+	switch msg.String() {
+	case "ctrl+c", "q":
+		return m, tea.Quit
+
+	case "tab":
+		m.currentSection = "quests"
+		return m, nil
+
+	case "shift+tab":
+		m.currentSection = "habits"
+		return m, nil
+
+	case "?":
+		m.mode = HelpView
+		return m, nil
+
+	case "r":
+		return m.refreshData(), nil
+
+	case "d":
+		if item, ok := m.journeyList.SelectedItem().(journeyItem); ok {
+			return m.showDeleteConfirmJourney(item.journey), nil
+		}
+
+	default:
+		var cmd tea.Cmd
+		m.journeyList, cmd = m.journeyList.Update(msg)
+		return m, cmd
+	}
+
+	return m, nil
+}
+
 func (m Model) handleErrorKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	switch msg.String() {
 	case "ctrl+c", "q":
 		return m, tea.Quit
 	case "r":
-		return m.refreshQuests(), nil
+		return m.refreshData(), nil
 	}
 	return m, nil
 }
@@ -66,7 +147,13 @@ func (m Model) handleConfirmDeleteKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		m.confirmSelected = true
 	case "enter", " ":
 		if m.confirmSelected {
-			return m.confirmDeleteQuest(), nil
+			if m.confirmQuest != nil {
+				return m.confirmDeleteQuest(), nil
+			} else if m.confirmHabit != nil {
+				return m.confirmDeleteHabit(), nil
+			} else if m.confirmJourney != nil {
+				return m.confirmDeleteJourney(), nil
+			}
 		}
 		return m.cancelDelete(), nil
 	}

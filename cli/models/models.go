@@ -32,9 +32,30 @@ type Journey struct {
 	Quests    []Quest   `json:"quests,omitempty"`
 }
 
+type Habit struct {
+	ID              int       `json:"id"`
+	Name            string    `json:"name"`
+	AuthorID        int       `json:"authorId"`
+	XPReward        int       `json:"xpReward"`
+	GoldReward      int       `json:"goldReward"`
+	CycleType       string    `json:"cycleType"`
+	CycleConfig     any       `json:"cycleConfig"`
+	Completed       []string  `json:"completed"`
+	CurrentStreak   int       `json:"currentStreak"`
+	MaxStreak       int       `json:"maxStreak"`
+	StartDate       time.Time `json:"startDate"`
+	EndDate         *time.Time `json:"endDate"`
+	CreatedAt       time.Time `json:"createdAt"`
+	UpdatedAt       time.Time `json:"updatedAt"`
+	CycleDescription string   `json:"cycleDescription"`
+	IsDueToday      bool      `json:"isDueToday"`
+}
+
 type AppData struct {
 	Journeys       []Journey
+	Habits         []Habit
 	CurrentJourney int
+	CurrentSection string
 }
 
 func NewQuest(title string) Quest {

@@ -28,9 +28,32 @@ func (m Model) View() string {
 }
 
 func (m Model) renderQuestListView() string {
-	header := HeaderStyle.Width(m.width).Render("Marcel - Your Quests")
+	var headerText string
+	var content string
+	var help string
 
-	content := m.questList.View()
+	tabs := renderTabs(m.currentSection, m.width)
+
+	switch m.currentSection {
+	case "quests":
+		headerText = "Marcel - Quests"
+		content = m.questList.View()
+		help = "\n" + questListHelp()
+	case "habits":
+		headerText = "Marcel - Habits"
+		content = m.habitList.View()
+		help = "\n" + habitListHelp()
+	case "journeys":
+		headerText = "Marcel - Journeys"
+		content = m.journeyList.View()
+		help = "\n" + journeyListHelp()
+	default:
+		headerText = "Marcel - Quests"
+		content = m.questList.View()
+		help = "\n" + questListHelp()
+	}
+
+	header := HeaderStyle.Width(m.width).Render(headerText)
 
 	statusBar := ""
 	if m.message != "" {
@@ -45,15 +68,89 @@ func (m Model) renderQuestListView() string {
 		statusBar = "\n" + StatusBarStyle.Width(m.width).Render(msgStyle.Render(m.message))
 	}
 
-	help := "\n" + questListHelp()
-
 	return lipgloss.JoinVertical(
 		lipgloss.Left,
 		header,
+		tabs,
 		content,
 		statusBar,
 		help,
 	)
+}
+
+func renderTabs(currentSection string, width int) string {
+	questStyle := lipgloss.NewStyle().Foreground(lightGray).Padding(0, 2)
+	habitStyle := lipgloss.NewStyle().Foreground(lightGray).Padding(0, 2)
+	journeyStyle := lipgloss.NewStyle().Foreground(lightGray).Padding(0, 2)
+
+	switch currentSection {
+	case "quests":
+		questStyle = questStyle.Foreground(brandOrange).Bold(true).Background(darkGray)
+	case "habits":
+		habitStyle = habitStyle.Foreground(brandOrange).Bold(true).Background(darkGray)
+	case "journeys":
+		journeyStyle = journeyStyle.Foreground(brandOrange).Bold(true).Background(darkGray)
+	}
+
+	tabs := lipgloss.JoinHorizontal(
+		lipgloss.Left,
+		questStyle.Render("Quests"),
+		habitStyle.Render("Habits"),
+		journeyStyle.Render("Journeys"),
+	)
+
+	return lipgloss.NewStyle().Width(width).Render(tabs)
+}
+
+func habitListHelp() string {
+	helpItems := []string{
+		"↑/k up",
+		"↓/j down",
+		"tab next",
+		"shift+tab prev",
+		"space toggle",
+		"d delete",
+		"r refresh",
+		"? help",
+		"q quit",
+	}
+
+	var styledItems []string
+	for _, item := range helpItems {
+		parts := strings.SplitN(item, " ", 2)
+		if len(parts) == 2 {
+			keyStyle := lipgloss.NewStyle().Foreground(brandOrange).Bold(true)
+			descStyle := lipgloss.NewStyle().Foreground(lightGray)
+			styledItems = append(styledItems, keyStyle.Render(parts[0])+" "+descStyle.Render(parts[1]))
+		}
+	}
+
+	return HelpStyle.Render(strings.Join(styledItems, "  •  "))
+}
+
+func journeyListHelp() string {
+	helpItems := []string{
+		"↑/k up",
+		"↓/j down",
+		"tab next",
+		"shift+tab prev",
+		"d delete",
+		"r refresh",
+		"? help",
+		"q quit",
+	}
+
+	var styledItems []string
+	for _, item := range helpItems {
+		parts := strings.SplitN(item, " ", 2)
+		if len(parts) == 2 {
+			keyStyle := lipgloss.NewStyle().Foreground(brandOrange).Bold(true)
+			descStyle := lipgloss.NewStyle().Foreground(lightGray)
+			styledItems = append(styledItems, keyStyle.Render(parts[0])+" "+descStyle.Render(parts[1]))
+		}
+	}
+
+	return HelpStyle.Render(strings.Join(styledItems, "  •  "))
 }
 
 func (m Model) renderLoadingView() string {
@@ -159,18 +256,29 @@ Authentication:
 }
 
 func (m Model) renderConfirmDeleteView() string {
-	if m.confirmQuest == nil {
+	var title, itemName string
+
+	if m.confirmQuest != nil {
+		title = "Delete Quest?"
+		itemName = m.confirmQuest.Title
+	} else if m.confirmHabit != nil {
+		title = "Delete Habit?"
+		itemName = m.confirmHabit.Name
+	} else if m.confirmJourney != nil {
+		title = "Delete Journey?"
+		itemName = m.confirmJourney.Name
+	} else {
 		return ""
 	}
 
-	title := lipgloss.NewStyle().
+	titleStyled := lipgloss.NewStyle().
 		Foreground(red).
 		Bold(true).
-		Render("Delete Quest?")
+		Render(title)
 
-	questTitle := lipgloss.NewStyle().
+	itemNameStyled := lipgloss.NewStyle().
 		Foreground(white).
-		Render(m.confirmQuest.Title)
+		Render(itemName)
 
 	noStyle := lipgloss.NewStyle().
 		Foreground(white).
@@ -195,9 +303,9 @@ func (m Model) renderConfirmDeleteView() string {
 
 	content := lipgloss.JoinVertical(
 		lipgloss.Left,
-		title,
+		titleStyled,
 		"",
-		questTitle,
+		itemNameStyled,
 		"",
 		buttons,
 		"",

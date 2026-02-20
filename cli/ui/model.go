@@ -24,7 +24,10 @@ type Model struct {
 	storage         *storage.Storage
 	data            *models.AppData
 	mode            ViewMode
+	currentSection  string
 	questList       list.Model
+	habitList       list.Model
+	journeyList     list.Model
 	spinner         spinner.Model
 	message         string
 	errorMessage    string
@@ -33,6 +36,8 @@ type Model struct {
 	ready           bool
 	needsRedraw     bool
 	confirmQuest    *models.Quest
+	confirmHabit    *models.Habit
+	confirmJourney  *models.Journey
 	confirmSelected bool
 }
 
@@ -47,10 +52,11 @@ func NewModel() (*Model, error) {
 	sp.Style = SpinnerStyle
 
 	m := &Model{
-		storage: s,
-		mode:    LoadingView,
-		spinner: sp,
-		data:    &models.AppData{},
+		storage:        s,
+		mode:           LoadingView,
+		spinner:        sp,
+		data:           &models.AppData{},
+		currentSection: "quests",
 	}
 
 	if err := s.GetAPIClient().CheckAuth(); err != nil {
@@ -68,6 +74,7 @@ func NewModel() (*Model, error) {
 
 	m.data = data
 	m.mode = QuestListView
+	m.currentSection = data.CurrentSection
 
 	return m, nil
 }

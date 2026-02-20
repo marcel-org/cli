@@ -63,3 +63,19 @@ func (c *Client) CreateJourney(name string) (*models.Journey, error) {
 
 	return &result.Journey, nil
 }
+
+func (c *Client) DeleteJourney(journeyID int) error {
+	path := fmt.Sprintf("/journey/%d", journeyID)
+	resp, err := c.doRequest("DELETE", path, nil)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		body, _ := io.ReadAll(resp.Body)
+		return fmt.Errorf("failed to delete journey: status %d, body: %s", resp.StatusCode, string(body))
+	}
+
+	return nil
+}

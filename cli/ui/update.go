@@ -19,16 +19,27 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.height = msg.Height
 
 		if !m.ready {
-			m.questList = newQuestList(m.data, m.width-4, m.height-8)
+			m.questList = newQuestList(m.data, m.width-4, m.height-10)
+			m.habitList = newHabitList(m.data, m.width-4, m.height-10)
+			m.journeyList = newJourneyList(m.data, m.width-4, m.height-10)
 			m.ready = true
 		} else {
-			m.questList.SetSize(m.width-4, m.height-8)
+			m.questList.SetSize(m.width-4, m.height-10)
+			m.habitList.SetSize(m.width-4, m.height-10)
+			m.journeyList.SetSize(m.width-4, m.height-10)
 		}
 
 	case tea.KeyMsg:
 		switch m.mode {
 		case QuestListView:
-			return m.handleQuestListKeys(msg)
+			switch m.currentSection {
+			case "quests":
+				return m.handleQuestListKeys(msg)
+			case "habits":
+				return m.handleHabitListKeys(msg)
+			case "journeys":
+				return m.handleJourneyListKeys(msg)
+			}
 		case ErrorView:
 			return m.handleErrorKeys(msg)
 		case HelpView:

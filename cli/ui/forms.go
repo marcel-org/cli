@@ -19,9 +19,11 @@ func NewQuestForm(journeys []models.Journey) (*QuestForm, error) {
 	form := &QuestForm{}
 
 	difficultyOptions := []huh.Option[string]{
-		{Key: "Easy (1-2 XP)", Value: "easy"},
-		{Key: "Medium (3-5 XP)", Value: "medium"},
-		{Key: "Hard (6-10 XP)", Value: "hard"},
+		{Key: "Easy", Value: "easy"},
+		{Key: "Medium", Value: "medium"},
+		{Key: "Hard", Value: "hard"},
+		{Key: "Epic", Value: "epic"},
+		{Key: "Legendary", Value: "legendary"},
 	}
 
 	journeyOptions := []huh.Option[int]{
