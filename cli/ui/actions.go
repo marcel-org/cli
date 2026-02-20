@@ -33,32 +33,31 @@ func (m Model) toggleQuest(quest models.Quest) Model {
 	return m
 }
 
-func (m Model) deleteQuest(quest models.Quest) Model {
-	dialog, err := NewConfirmDialog(
-		"Delete Quest?",
-		fmt.Sprintf("Are you sure you want to delete: %s", quest.Title),
-	)
+func (m Model) showDeleteConfirm(quest models.Quest) Model {
+	m.mode = ConfirmDeleteView
+	m.confirmQuest = &quest
+	m.confirmSelected = false
+	return m
+}
 
-	if err != nil {
-		m.message = fmt.Sprintf("Error: %v", err)
+func (m Model) confirmDeleteQuest() Model {
+	if m.confirmQuest == nil {
+		m.mode = QuestListView
 		return m
 	}
 
-	if !dialog.Confirmed {
-		m.message = "Deletion cancelled"
-		return m
-	}
-
-	err = m.storage.GetAPIClient().DeleteQuest(quest.ID)
+	err := m.storage.GetAPIClient().DeleteQuest(m.confirmQuest.ID)
 	if err != nil {
 		m.message = fmt.Sprintf("Failed to delete quest: %v", err)
+		m.mode = QuestListView
+		m.confirmQuest = nil
 		return m
 	}
 
 	for i := range m.data.Journeys {
 		newQuests := []models.Quest{}
 		for _, q := range m.data.Journeys[i].Quests {
-			if q.ID != quest.ID {
+			if q.ID != m.confirmQuest.ID {
 				newQuests = append(newQuests, q)
 			}
 		}
@@ -67,7 +66,16 @@ func (m Model) deleteQuest(quest models.Quest) Model {
 
 	m.questList = newQuestList(m.data, m.width-4, m.height-8)
 	m.message = "Quest deleted successfully"
+	m.mode = QuestListView
+	m.confirmQuest = nil
 
+	return m
+}
+
+func (m Model) cancelDelete() Model {
+	m.mode = QuestListView
+	m.confirmQuest = nil
+	m.message = "Deletion cancelled"
 	return m
 }
 

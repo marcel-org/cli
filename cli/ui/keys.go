@@ -26,8 +26,13 @@ func (m Model) handleQuestListKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 
 	case "d":
 		if item, ok := m.questList.SelectedItem().(questItem); ok {
-			return m.deleteQuest(item.quest), nil
+			return m.showDeleteConfirm(item.quest), nil
 		}
+
+	default:
+		var cmd tea.Cmd
+		m.questList, cmd = m.questList.Update(msg)
+		return m, cmd
 	}
 
 	return m, nil
@@ -47,6 +52,23 @@ func (m Model) handleHelpKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	switch msg.String() {
 	case "ctrl+c", "q", "esc", "?":
 		m.mode = QuestListView
+	}
+	return m, nil
+}
+
+func (m Model) handleConfirmDeleteKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+	switch msg.String() {
+	case "ctrl+c", "q", "esc":
+		return m.cancelDelete(), nil
+	case "left", "h":
+		m.confirmSelected = false
+	case "right", "l":
+		m.confirmSelected = true
+	case "enter", " ":
+		if m.confirmSelected {
+			return m.confirmDeleteQuest(), nil
+		}
+		return m.cancelDelete(), nil
 	}
 	return m, nil
 }

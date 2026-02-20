@@ -8,6 +8,11 @@ import (
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 
+	if m.needsRedraw {
+		m.needsRedraw = false
+		cmds = append(cmds, tea.ClearScreen)
+	}
+
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
@@ -28,17 +33,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m.handleErrorKeys(msg)
 		case HelpView:
 			return m.handleHelpKeys(msg)
+		case ConfirmDeleteView:
+			return m.handleConfirmDeleteKeys(msg)
 		}
 
 	case spinner.TickMsg:
 		var cmd tea.Cmd
 		m.spinner, cmd = m.spinner.Update(msg)
-		cmds = append(cmds, cmd)
-	}
-
-	if m.mode == QuestListView && m.ready {
-		var cmd tea.Cmd
-		m.questList, cmd = m.questList.Update(msg)
 		cmds = append(cmds, cmd)
 	}
 

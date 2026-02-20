@@ -20,13 +20,15 @@ func (m Model) View() string {
 		return m.renderErrorView()
 	case HelpView:
 		return m.renderHelpView()
+	case ConfirmDeleteView:
+		return m.renderConfirmDeleteView()
 	}
 
 	return ""
 }
 
 func (m Model) renderQuestListView() string {
-	header := HeaderStyle.Width(m.width).Render("Marcel CLI - Your Quests")
+	header := HeaderStyle.Width(m.width).Render("Marcel - Your Quests")
 
 	content := m.questList.View()
 
@@ -146,6 +148,63 @@ Authentication:
 			footer,
 		),
 	)
+
+	return lipgloss.Place(
+		m.width,
+		m.height,
+		lipgloss.Center,
+		lipgloss.Center,
+		box,
+	)
+}
+
+func (m Model) renderConfirmDeleteView() string {
+	if m.confirmQuest == nil {
+		return ""
+	}
+
+	title := lipgloss.NewStyle().
+		Foreground(red).
+		Bold(true).
+		Render("Delete Quest?")
+
+	questTitle := lipgloss.NewStyle().
+		Foreground(white).
+		Render(m.confirmQuest.Title)
+
+	noStyle := lipgloss.NewStyle().
+		Foreground(white).
+		Padding(0, 2)
+
+	yesStyle := lipgloss.NewStyle().
+		Foreground(white).
+		Padding(0, 2)
+
+	if !m.confirmSelected {
+		noStyle = noStyle.Background(brandOrange).Bold(true)
+	} else {
+		yesStyle = yesStyle.Background(red).Bold(true)
+	}
+
+	buttons := lipgloss.JoinHorizontal(
+		lipgloss.Left,
+		noStyle.Render("No"),
+		"  ",
+		yesStyle.Render("Yes"),
+	)
+
+	content := lipgloss.JoinVertical(
+		lipgloss.Left,
+		title,
+		"",
+		questTitle,
+		"",
+		buttons,
+		"",
+		MutedStyle.Render("←/h: No  →/l: Yes  Enter: Confirm  Esc: Cancel"),
+	)
+
+	box := BoxStyle.Render(content)
 
 	return lipgloss.Place(
 		m.width,

@@ -17,19 +17,23 @@ const (
 	LoadingView
 	ErrorView
 	HelpView
+	ConfirmDeleteView
 )
 
 type Model struct {
-	storage      *storage.Storage
-	data         *models.AppData
-	mode         ViewMode
-	questList    list.Model
-	spinner      spinner.Model
-	message      string
-	errorMessage string
-	width        int
-	height       int
-	ready        bool
+	storage         *storage.Storage
+	data            *models.AppData
+	mode            ViewMode
+	questList       list.Model
+	spinner         spinner.Model
+	message         string
+	errorMessage    string
+	width           int
+	height          int
+	ready           bool
+	needsRedraw     bool
+	confirmQuest    *models.Quest
+	confirmSelected bool
 }
 
 func NewModel() (*Model, error) {
