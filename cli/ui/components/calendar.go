@@ -159,8 +159,12 @@ func (c *Calendar) View() string {
 	startOfWeek := firstDay.AddDate(0, 0, -weekStartOffset)
 
 	for week := 0; week < 6; week++ {
+		weekHasCurrentMonth := false
 		for day := 0; day < 7; day++ {
 			date := startOfWeek.AddDate(0, 0, week*7+day)
+			if date.Month() == c.currentDate.Month() {
+				weekHasCurrentMonth = true
+			}
 			cellContent := c.renderMonthCell(date)
 			sb.WriteString(cellContent)
 			if day < 6 {
@@ -169,7 +173,7 @@ func (c *Calendar) View() string {
 		}
 		sb.WriteString("\n")
 
-		if startOfWeek.AddDate(0, 0, week*7+7).Month() != c.currentDate.Month() {
+		if !weekHasCurrentMonth && week > 0 {
 			break
 		}
 	}
