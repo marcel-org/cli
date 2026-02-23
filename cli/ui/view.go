@@ -182,19 +182,19 @@ Other:
   q, Ctrl+C    Quit
 
 Configuration:
-  Environment variables (highest priority):
+  Environment variable:
     MARCEL_TOKEN           - Your Marcel CLI token
-    MARCEL_API_ENDPOINT    - API endpoint URL
 
   Config file (~/.marcel.yml):
-    api_endpoint: http://localhost:3000
-    auth_token: marcel_your_token_here
+    week_start_day: sunday
 
 Authentication:
   1. Go to Marcel web app settings
   2. Generate a Marcel CLI token
   3. Copy the token
-  4. Set MARCEL_TOKEN environment variable or add to config file
+  4. Set MARCEL_TOKEN environment variable
+
+Note: API endpoint is hardcoded to https://api.marcel.my
 `
 
 	footer := HelpStyle.Render("\nPress ? or Esc to return")

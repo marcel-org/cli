@@ -8,8 +8,9 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+const APIEndpoint = "https://api.marcel.my"
+
 type Config struct {
-	APIEndpoint  string `yaml:"api_endpoint"`
 	AuthToken    string `yaml:"-"`
 	WeekStartDay string `yaml:"week_start_day"`
 }
@@ -23,7 +24,6 @@ func Load() (*Config, error) {
 	configPath := filepath.Join(homeDir, ".marcel.yml")
 
 	config := &Config{
-		APIEndpoint:  "https://api.marcel.my",
 		AuthToken:    "",
 		WeekStartDay: "sunday",
 	}
@@ -41,20 +41,8 @@ func Load() (*Config, error) {
 		return config, nil
 	}
 
-	if config.APIEndpoint == "" {
-		config.APIEndpoint = "https://api.marcel.my"
-	}
-
-	if strings.HasPrefix(config.APIEndpoint, "~/") {
-		config.APIEndpoint = filepath.Join(homeDir, config.APIEndpoint[2:])
-	}
-
 	if envToken := os.Getenv("MARCEL_TOKEN"); envToken != "" {
 		config.AuthToken = envToken
-	}
-
-	if envEndpoint := os.Getenv("MARCEL_API_ENDPOINT"); envEndpoint != "" {
-		config.APIEndpoint = envEndpoint
 	}
 
 	if config.WeekStartDay == "" {
