@@ -93,7 +93,7 @@ func NewModel() (*Model, error) {
 
 	if err := s.GetAPIClient().CheckAuth(); err != nil {
 		m.mode = ErrorView
-		m.errorMessage = fmt.Sprintf("Authentication failed: %v\n\nPlease set MARCEL_TOKEN environment variable or configure ~/.marcel.yml", err)
+		m.errorMessage = fmt.Sprintf("Authentication failed: %v\n\nPlease set MARCEL_TOKEN environment variable", err)
 		return m, nil
 	}
 

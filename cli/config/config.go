@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -18,7 +19,7 @@ type Config struct {
 func Load() (*Config, error) {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get home directory: %w", err)
 	}
 
 	configPath := filepath.Join(homeDir, ".marcel.yml")
@@ -29,20 +30,23 @@ func Load() (*Config, error) {
 	}
 
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
-		return config, nil
+		if err := config.Save(); err != nil {
+			return nil, fmt.Errorf("failed to create config file at %s: %w", configPath, err)
+		}
+	} else {
+		data, err := os.ReadFile(configPath)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read config file at %s: %w", configPath, err)
+		}
+
+		if err := yaml.Unmarshal(data, config); err != nil {
+			return nil, fmt.Errorf("invalid YAML format in %s: %w", configPath, err)
+		}
 	}
 
-	data, err := os.ReadFile(configPath)
-	if err != nil {
-		return config, nil
-	}
-
-	if err := yaml.Unmarshal(data, config); err != nil {
-		return config, nil
-	}
-
-	if envToken := os.Getenv("MARCEL_TOKEN"); envToken != "" {
-		config.AuthToken = envToken
+	config.AuthToken = os.Getenv("MARCEL_TOKEN")
+	if config.AuthToken == "" {
+		return nil, fmt.Errorf("MARCEL_TOKEN environment variable is not set")
 	}
 
 	if config.WeekStartDay == "" {
