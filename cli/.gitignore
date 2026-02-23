@@ -1,24 +1,31 @@
 # Binaries
-build/
-dist/
-marcel
 marcel-cli
-
-# Go
 *.exe
 *.exe~
 *.dll
 *.so
 *.dylib
+
+# Test binary
 *.test
+
+# Output of the go coverage tool
 *.out
 
+# Dependency directories
+vendor/
+
+# Go workspace file
+go.work
+
 # IDE
-.vscode/
 .idea/
+.vscode/
 *.swp
 *.swo
 *~
 
-# macOS
+# OS
 .DS_Store
+marcel
+build/

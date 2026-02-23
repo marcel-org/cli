@@ -71,8 +71,6 @@ Optional `~/.marcel.yml` file:
 week_start_day: sunday  # Options: sunday, monday, tuesday, etc.
 ```
 
-The API endpoint is hardcoded to `https://api.marcel.my`.
-
 ## Tech Stack
 
 - [Bubble Tea](https://github.com/charmbracelet/bubbletea) - TUI framework

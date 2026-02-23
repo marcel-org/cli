@@ -66,7 +66,6 @@ Input Mode:
     Backspace    Delete character
 
 CONFIGURATION:
-    API endpoint: Set in ~/.marcel.yml
     Auth token: Set MARCEL_TOKEN environment variable
 
 For more information, visit: https://github.com/marcel-org/cli`)
