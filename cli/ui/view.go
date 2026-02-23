@@ -193,8 +193,6 @@ Authentication:
   2. Generate a Marcel CLI token
   3. Copy the token
   4. Set MARCEL_TOKEN environment variable
-
-Note: API endpoint is hardcoded to https://api.marcel.my
 `
 
 	footer := HelpStyle.Render("\nPress ? or Esc to return")
