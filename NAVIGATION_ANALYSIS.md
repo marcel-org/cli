@@ -1,701 +1,725 @@
 # Marcel Navigation Structure Analysis
-## Implementation Status & Future Recommendations
-
----
-
-## Implementation Status: Option B Complete ✅
+## Current State & Future Enhancements
 
 **Last Updated:** 2026-02-23
 
-Marcel's navigation has been restructured using **Option B (Conservative Evolution)**. The new structure successfully addresses the primary discoverability issues while maintaining code stability.
+---
 
-### What Changed:
-- ✅ **Focus promoted** to primary navigation (was buried as tab 4 in Goals)
-- ✅ **Marcel AI discoverable** as 4th tab in Tasks (was hidden with no nav link)
-- ✅ **Tasks renamed** from "Goals" for clarity
-- ✅ **Social unified** - Hub and Spaces merged into single section
-- ✅ **Clean 5-item navigation** - Calendar, Tasks, Focus, Social, Profile
+## Executive Summary
 
-**Primary Achievement:** Critical features are now discoverable, and similar features are unified.
+Marcel's navigation provides **5 primary sections** optimized for productivity workflows: Calendar, Tasks, Focus, Social, and Profile. The structure prioritizes **feature discoverability** and **workflow efficiency**, ensuring all features are accessible within 2 taps on mobile and desktop.
+
+**Key Principles:**
+- **Workflow-first design** - Navigation reflects user intentions, not code organization
+- **Maximum 2-tap access** - All features reachable quickly
+- **Clear mental models** - Each section has a distinct purpose
+- **Mobile-optimized** - 5-slot bottom navigation with consistent desktop experience
+
+**Primary Opportunity:** Add a unified "Today" dashboard for daily workflow optimization (see Future Enhancements section).
 
 ---
 
-## Current Navigation Structure (Option B Implemented)
+## Current Navigation Structure
 
-### Main Navigation (5 items)
-1. **Calendar** - Event management
-   - Tabs: Day View | Week View | Month View | List View
-2. **Tasks** - Task and project management
-   - Tabs: Quests | Habits | Journeys | **AI (Marcel Chat)**
-   - Marcel AI now accessible for schedule generation and task creation
-3. **Focus** - Deep work sessions ⭐ *Promoted to primary nav*
-   - Tabs: Timer | Sessions
-   - Solo and group focus sessions with XP rewards
-4. **Social** - All multiplayer features ⭐ *Unified from Hub + Spaces*
-   - Tabs: Friends | Spaces | Leaderboard
-   - Friends tab includes invitations and activity feed
-   - Spaces tab includes team collaboration (quests, journeys, chat, members)
-5. **Profile** - Personal progression
-   - Tabs: Stats | Shop | Inventory | Settings
-
-### Mobile Implementation
-- Bottom nav shows 5 items: Calendar | Tasks | Focus | Social | Profile
-- All critical features accessible within 2 taps
-- Unified Social section reduces navigation complexity
-
----
-
-## Problems Resolved by Option B ✅
-
-### 1. ~~**Focus is Criminally Buried**~~ → **FIXED**
-- ✅ **Focus is now primary navigation** with dedicated icon
-- ✅ Located between Tasks and Social for easy access
-- ✅ Two tabs: Timer (start sessions) | Sessions (view history)
-- ✅ Solo and group focus features fully accessible
-- **Impact:** Users can start focus sessions in 1 tap instead of 3
-
-### 2. ~~**Marcel AI is Invisible**~~ → **FIXED**
-- ✅ **Marcel AI is now 4th tab in Tasks section**
-- ✅ Accessible via Tasks > AI tab with clear chat icon
-- ✅ Premium feature discoverability dramatically improved
-- ✅ Natural placement alongside task management workflow
-- **Impact:** AI chat accessible in 2 taps with context-appropriate placement
-
-### 3. ~~**"Goals" is Overloaded**~~ → **IMPROVED**
-- ✅ Renamed to **"Tasks"** for clarity
-- ✅ Focus extracted to primary navigation (reduced from 4 tabs to 3)
-- ✅ Now contains: Quests | Habits | Journeys | AI
-- ⚠️ Habits still in Tasks section (see "Remaining Opportunities" below)
-- **Impact:** Clearer mental model, reduced cognitive load
-
-### 4. ~~**Hub vs Spaces Confusion**~~ → **FIXED**
-- ✅ **Hub and Spaces merged into unified "Social" section**
-- ✅ Three organized tabs: Friends | Spaces | Leaderboard
-- ✅ Friends tab includes invitations and activity feed (from Hub)
-- ✅ Spaces tab includes all team collaboration features
-- ✅ Clear single destination for all social/multiplayer features
-- **Impact:** "Where do I find people?" now has one clear answer: Social
-
-## Remaining Opportunities (Future Enhancements)
-
-### 5. **No Unified Daily Dashboard**
-- Calendar shows events only
-- Tasks are scattered across Quests/Habits tabs
-- Focus sessions are separate page
-- **No "Today" view** showing:
-  - Today's events
-  - Today's habits to complete
-  - Active quests
-  - Current focus session
-- **Solution:** Option A's "Today" dashboard (Phase 2 enhancement)
-
-### 6. **Habits Placement Debate**
-- Currently in Tasks section (planning mindset)
-- Could move to Focus section (execution mindset)
-- Habits are about daily check-ins and streaks (similar to focus sessions)
-- **Recommendation:** Test user behavior, consider moving in Phase 2
-
----
-
-## User Workflow Analysis: Before vs After
-
-### Primary User Journeys (Improved with Option B)
-
-**Journey 1: Solo Daily Productivity**
-```
-Before Option B:
-Calendar (1) + Goals/Quests (2) + Goals/Habits (2) + Goals/Focus (2) + Chat (hidden!) = 7+ actions
-
-After Option B:
-1. Calendar (1 tap) → Check today's events
-2. Tasks/Quests (2 taps) → Review pending tasks
-3. Tasks/Habits (2 taps) → Check habits and streaks
-4. Tasks/AI (2 taps) → Ask Marcel for suggestions
-5. Focus (1 tap) → Start focus session
-
-Result: 2 taps max for any action, AI now discoverable ✅
-```
-
-**Journey 2: Team Collaboration**
-```
-Before Option B:
-Spaces (1) + Spaces/Chat (1) + Spaces/Quests (1) + Goals/Focus (2) + back to Spaces = 5 actions, jumping sections
-
-After Option B:
-1. Social/Spaces (2 taps) → Check messages and quests
-2. Focus (1 tap) → Start group focus session
-3. Social/Spaces (2 taps) → Complete shared quest
-
-Result: Cohesive workflow, Focus easily accessible ✅
-```
-
-**Journey 3: Social/Competitive**
-```
-Before Option B:
-Hub/Leaderboard (2) + Hub/Friends (2) + Hub/Invites (2) + Goals/Focus (2) = 8 actions across 2 sections
-
-After Option B:
-1. Social/Friends (2 taps) → See friends and invites
-2. Social/Leaderboard (2 taps) → Check ranking
-3. Focus (1 tap) → Join friend's focus session
-
-Result: All social in one place, simpler mental model ✅
-```
-
-**Journey 4: Planning with AI**
-```
-Before Option B:
-Type /chat URL manually (!) + Chat + Approve + Goals + Calendar = Hidden feature
-
-After Option B:
-1. Tasks/AI (2 taps) → Open Marcel AI chat
-2. Ask for schedule suggestions
-3. Approve actions → Quests/events/habits created
-4. Tasks or Calendar (1 tap) → View new items
-
-Result: AI discoverable, natural workflow ✅
-```
-
-### Key Improvements Summary
-- ✅ Maximum 2 taps to reach any feature (down from 3+)
-- ✅ No hidden features (AI now discoverable)
-- ✅ Unified social features (one destination instead of two)
-- ✅ Focus sessions easily accessible (1 tap vs 3)
-- ⚠️ Still no unified "Today" view (requires Option A)
-
----
-
-## Navigation Architecture
-
-### Current Implementation: Option B (Conservative Evolution) ✅
+### Primary Navigation (5 Items)
 
 ```
 ┌─────────────────────────────────────────────┐
-│  Primary Navigation (5 slots)               │
+│  Mobile Bottom Nav & Desktop Sidebar         │
 ├─────────────────────────────────────────────┤
 │  1. Calendar                                │
+│     📅 solar:calendar-bold-duotone          │
 │     Tabs: Day | Week | Month | List         │
-│     - Full calendar views                   │
-│     - Event management                      │
+│     • Full calendar views and management    │
+│     • Event creation and editing            │
+│     • Time-based scheduling                 │
 │                                             │
 │  2. Tasks                                   │
+│     ✅ solar:check-circle-bold-duotone      │
 │     Tabs: Quests | Habits | Journeys | AI   │
-│     - Task management (todo/doing/done)     │
-│     - Habit tracking with streaks           │
-│     - Project organization                  │
-│     - Marcel AI chat for scheduling         │
+│     • Quests: One-time completable tasks    │
+│     • Habits: Daily/weekly routines         │
+│     • Journeys: Project organization        │
+│     • AI: Marcel chat for scheduling        │
 │                                             │
 │  3. Focus                                   │
+│     🧘 solar:meditation-bold-duotone        │
 │     Tabs: Timer | Sessions                  │
-│     - Start solo/group focus sessions       │
-│     - Session history and stats             │
-│     - XP/gold rewards                       │
+│     • Solo and group focus sessions         │
+│     • Pomodoro timer with quest linking     │
+│     • Session history and statistics        │
+│     • XP/gold rewards on completion         │
 │                                             │
 │  4. Social                                  │
+│     👥 solar:users-group-rounded-bold       │
 │     Tabs: Friends | Spaces | Leaderboard    │
-│     - Friends list + activity feed          │
-│     - Team collaboration spaces             │
-│     - Competitive rankings                  │
+│     • Friends: List, activity, invitations  │
+│     • Spaces: Team collaboration & chat     │
+│     • Leaderboard: Competitive rankings     │
 │                                             │
 │  5. Profile                                 │
+│     👤 User avatar                          │
 │     Tabs: Stats | Shop | Inventory | Settings│
-│     - User progression and level            │
-│     - Cosmetics and shop                    │
-│     - App settings                          │
+│     • User level, XP, and gold              │
+│     • Cosmetics shop and purchases          │
+│     • Inventory management                  │
+│     • Application settings                  │
 └─────────────────────────────────────────────┘
 ```
 
-**Why this works:**
-- ✅ Focus gets deserved prominence (no longer buried)
-- ✅ Marcel AI becomes discoverable (in Tasks tab)
-- ✅ Social features unified (one destination for people)
-- ✅ Clear naming ("Tasks" not "Goals")
-- ✅ Minimal code changes (stable implementation)
+### Navigation Hierarchy
 
-### Future Enhancement: Option A (Workflow-Optimized)
+**Flat primary navigation** - All 5 sections are equal priority, accessible in 1 tap
+**Tabbed secondary navigation** - Each section contains 2-4 tabs for feature organization
+**Deep links** - Query parameters enable direct navigation (e.g., `/social?spaceId=123`)
+
+---
+
+## Design Principles & Decisions
+
+### 1. Workflow-First Organization
+
+Navigation reflects **user intentions**, not technical architecture:
+
+- **"What do I need to do today?"** → Tasks (quests, habits)
+- **"I need to focus right now"** → Focus (immediate access to timer)
+- **"What's happening with my team?"** → Social (unified destination)
+- **"When is my next meeting?"** → Calendar (event management)
+
+**Why this matters:** Users think in workflows, not entities. Grouping by user intention reduces cognitive load.
+
+### 2. Feature Discoverability
+
+All features are visible and accessible:
+
+- **Focus sessions** are primary navigation (not buried in tabs)
+- **Marcel AI** is discoverable in Tasks section (not hidden)
+- **Social features** unified in single section (no Hub/Spaces confusion)
+
+**Impact:** Premium features (Focus, AI) are discoverable, driving engagement and conversions.
+
+### 3. Mobile-First Constraints
+
+Bottom navigation on mobile supports **5 items maximum**:
+
+```
+Mobile: [Calendar] [Tasks] [Focus] [Social] [Profile]
+Desktop: Same 5 items in collapsible sidebar (280px → 80px)
+```
+
+**Design decision:** Keep mobile and desktop navigation consistent for predictable UX.
+
+### 4. Clear Section Boundaries
+
+Each section has a **distinct purpose** with no feature overlap:
+
+- **Tasks** = Planning (what to do)
+- **Focus** = Execution (doing deep work)
+- **Social** = Collaboration (working with others)
+- **Calendar** = Scheduling (when to do it)
+- **Profile** = Progression (personal growth)
+
+**Why this matters:** Clear boundaries prevent user confusion about where to find features.
+
+---
+
+## User Workflow Analysis
+
+### Daily Productivity Flow
+
+**Morning routine:**
+```
+1. Calendar (1 tap) → Check today's events
+2. Tasks > Habits (2 taps) → Complete daily check-ins
+3. Tasks > Quests (2 taps) → Review pending tasks
+4. Focus (1 tap) → Start first focus session
+```
+
+**Total:** 3-4 taps to complete morning workflow
+
+**With AI assistance:**
+```
+1. Tasks > AI (2 taps) → "What should I work on today?"
+2. Review AI suggestions
+3. Focus (1 tap) → Start suggested focus session
+```
+
+**Total:** 3 taps with intelligent guidance
+
+### Team Collaboration Flow
+
+**Check team status:**
+```
+1. Social > Spaces (2 taps) → View team space
+2. Select space → Quests tab → See team's active work
+3. Chat tab → Check messages
+4. Focus (1 tap) → Join team focus session
+```
+
+**Total:** 2-3 taps to engage with team
+
+### Social/Competitive Flow
+
+**Check progress and rankings:**
+```
+1. Social > Leaderboard (2 taps) → View rankings
+2. Social > Friends (2 taps) → See friends' activity
+3. Focus (1 tap) → Join friend's public session
+```
+
+**Total:** 2-3 taps for social engagement
+
+---
+
+## Strengths of Current Design
+
+### ✅ **1. Maximum 2-Tap Access**
+Every feature is reachable in 1-2 taps:
+- Primary sections: 1 tap
+- Section tabs: 2 taps
+- No feature is buried 3+ levels deep
+
+### ✅ **2. Focus Sessions Prominent**
+- Unique competitive advantage (group focus rooms)
+- Accessible in 1 tap from anywhere
+- Competitors (Focusmate) build entire apps around this
+- **Result:** Focus is now a first-class feature
+
+### ✅ **3. Marcel AI Discoverable**
+- Premium feature ($4.99/month) now visible in Tasks section
+- Context-appropriate placement (AI assists with task planning)
+- Clear icon and label
+- **Result:** AI drives premium conversions
+
+### ✅ **4. Unified Social Section**
+- All multiplayer features in one place
+- Clear mental model: Friends → casual, Spaces → structured teams
+- Single notification counter
+- **Result:** No more "Hub vs Spaces" confusion
+
+### ✅ **5. Mobile-Optimized**
+- 5-slot bottom nav uses all available space efficiently
+- Touch-friendly tab switching
+- Consistent desktop/mobile experience
+
+### ✅ **6. Command Palette Integration**
+- Cmd+K quick navigation to any section
+- Search for quests, journeys, spaces
+- Power user optimization layer
+
+---
+
+## Opportunities for Enhancement
+
+### 🎯 **1. No Unified Daily Dashboard**
+
+**Current state:** Users must visit 3+ sections to see daily status
+- Calendar → today's events
+- Tasks → Habits → today's habits
+- Tasks → Quests → active quests
+- Focus → timer status
+
+**Opportunity:** Create a "Today" dashboard that unifies daily items
+
+**Expected impact:**
+- Reduce daily workflow from 6+ taps to 1 tap
+- Increase engagement with integrated view
+- Enable AI-powered daily suggestions
+
+**See:** Future Enhancement section below
+
+### 🎯 **2. Habits Placement Debate**
+
+**Current:** Habits are in Tasks section (planning mindset)
+
+**Alternative consideration:** Move to Focus section (execution mindset)
+- Habits are about daily execution, not planning
+- Streaks align with focus session gamification
+- Natural fit: "Focus for 30min" = habit completion
+
+**Recommendation:** A/B test before moving
+- Collect user behavior data
+- Measure habit completion rates in both placements
+- Make decision based on engagement metrics
+
+### 🎯 **3. Marcel AI Accessibility**
+
+**Current:** AI in Tasks > AI tab (2 taps)
+
+**Enhancement options:**
+- **Floating button:** Global access from any page
+- **Cmd+I shortcut:** Keyboard quick-open
+- **Context menu:** Right-click → "Ask Marcel"
+
+**Expected impact:**
+- Increase AI usage by 50-100%
+- Enable contextual AI assistance
+- Drive premium conversions
+
+### 🎯 **4. Cross-Feature Intelligence**
+
+**Current:** Features operate independently
+
+**Enhancement opportunities:**
+- Calendar event → Auto-suggest focus session
+- Completed quest → Trigger habit check-in prompt
+- Focus session → Link to related quests/journeys
+- AI suggestions → Appear on Today dashboard
+
+**Expected impact:**
+- System feels cohesive and intelligent
+- Reduced manual workflow management
+- Increased feature discovery
+
+### 🎯 **5. Progressive Disclosure**
+
+**Current:** All tabs visible at once
+
+**Enhancement consideration:**
+- Smart tab ordering based on usage
+- Contextual tab visibility (hide empty sections)
+- Personalized navigation preferences
+
+**Trade-off:** Balance between personalization and predictability
+
+---
+
+## Future Enhancement: Today Dashboard
+
+### Overview
+
+A unified **"Today"** section that becomes the primary landing page, showing all daily items in one view.
+
+### Proposed Structure
 
 ```
 ┌─────────────────────────────────────────────┐
-│  Primary Navigation (5 slots)               │
+│  Today Dashboard (New Primary Section)       │
 ├─────────────────────────────────────────────┤
-│  1. Today                                   │
-│     - Daily dashboard                       │
-│     - Today's events (from calendar)        │
-│     - Habits to complete                    │
-│     - Active quests                         │
-│     - Quick-start focus button              │
-│     - Marcel AI suggestions card            │
+│  📅 Today: Sunday, Feb 23                   │
 │                                             │
-│  2. Plan                                    │
-│     Tabs: Calendar | Quests | Journeys      │
-│     - Full calendar views                   │
-│     - All quests (todo/doing/done)          │
-│     - Project management (journeys)         │
-│     - Marcel AI chat (tab 4)                │
+│  🔥 Habits Due Today                        │
+│  ├─ Morning meditation (3 day streak)       │
+│  ├─ Exercise (15 day streak)                │
+│  └─ Journal entry                           │
 │                                             │
-│  3. Focus                                   │
-│     Tabs: Timer | Sessions | Habits         │
-│     - Start solo/group focus                │
-│     - Active session timer                  │
-│     - Session history                       │
-│     - Habit tracking (moved here!)          │
+│  ✅ Active Quests (3)                       │
+│  ├─ Review navigation design                │
+│  ├─ Update documentation                    │
+│  └─ Test mobile layout                      │
 │                                             │
-│  4. Social                                  │
-│     Tabs: Friends | Spaces | Leaderboard    │
-│     - Friends list + activity feed          │
-│     - Team spaces (merged from Spaces page) │
-│     - Competitive leaderboard               │
+│  📆 Today's Events (2)                      │
+│  ├─ 10:00 AM - Team standup                │
+│  └─ 2:00 PM - Design review                │
 │                                             │
-│  5. Profile                                 │
-│     Tabs: Stats | Shop | Inventory | Settings│
-│     - User stats (level, XP, gold)          │
-│     - Shop + cosmetics                      │
-│     - Settings                              │
+│  🧘 Quick Focus                             │
+│  └─ [Start 25min Session] [Join Group]     │
+│                                             │
+│  🤖 Marcel Suggests                         │
+│  └─ "Focus on navigation docs before standup"│
 └─────────────────────────────────────────────┘
 ```
 
-**Why this would be even better:**
-- ✅ **Today** = Daily dashboard showing all due items at once
-- ✅ **Plan** = Unified planning workspace (calendar + tasks + AI)
-- ✅ **Focus** = Deep work mode (already promoted in Option B ✅)
-- ✅ **Social** = All multiplayer features (already unified in Option B ✅)
-- ✅ **Profile** = Personal progression (existing structure)
+### Implementation Options
 
-**Additional improvements over Option B:**
-1. **Today dashboard** for unified daily overview (replaces Calendar as primary)
-2. **Plan section** combines calendar and tasks (reduced cognitive load)
-3. **Habits moved** to Focus section (execution mindset)
-4. **Marcel AI** more integrated into planning workflow
+**Option 1: Replace Calendar as Primary**
+```
+[Today] [Tasks] [Focus] [Social] [Profile]
+      └─ Calendar moved to tab inside Today
+```
 
-**When to implement:**
-- After collecting user behavior data on Option B
-- When team capacity allows for new dashboard component
-- Consider A/B testing with subset of users first
+**Option 2: Add as 6th Item (Desktop Only)**
+```
+Desktop: [Today] [Calendar] [Tasks] [Focus] [Social] [Profile]
+Mobile:  [Calendar] [Tasks] [Focus] [Social] [Profile]
+```
+
+**Option 3: Smart Landing Page**
+```
+- Default landing: Today dashboard
+- Calendar/Tasks/Focus still in nav
+- Today = aggregated view, not separate section
+```
+
+**Recommendation:** Option 3 (Smart Landing Page)
+- Doesn't require nav restructure
+- Mobile stays at 5 items
+- Today becomes homepage, not nav item
+- Users can still navigate to dedicated sections
+
+### Expected Impact
+
+**Metrics:**
+- Session start efficiency: -50% taps for daily workflow
+- Feature engagement: +30% (unified view increases visibility)
+- User retention: +20% at day 7 (clearer daily value)
+- Time to first action: -40% (everything visible on load)
+
+**User feedback predictions:**
+- "Finally! I don't have to check 4 places"
+- "Marcel feels like it knows what I need to do"
+- "The AI suggestions are perfect for my workflow"
 
 ---
 
-### Historical Reference: Option C (Entity-Based) ❌ Not Recommended
+## Implementation Roadmap
 
-```
-┌─────────────────────────────────────────────┐
-│  Primary Navigation (5 slots)               │
-├─────────────────────────────────────────────┤
-│  1. Time                                    │
-│     Tabs: Calendar | Focus Sessions         │
-│     - All time-based features               │
-│                                             │
-│  2. Tasks                                   │
-│     Tabs: Quests | Habits | Journeys        │
-│     - All task management                   │
-│                                             │
-│  3. Social                                  │
-│     Tabs: Friends | Spaces | Leaderboard    │
-│     - All multiplayer features              │
-│                                             │
-│  4. AI                                      │
-│     - Marcel chat                           │
-│     - Schedule generation                   │
-│     - Tool approvals                        │
-│                                             │
-│  5. Profile                                 │
-│     (Keep as-is)                            │
-└─────────────────────────────────────────────┘
-```
+### Phase 1: Foundation ✅ COMPLETED (2026-02-23)
 
-**Why this might work:**
-- ✅ Clear categorical separation
-- ✅ AI gets its own spotlight
-- ✅ Time-based features unified
+**Goal:** Establish solid navigation base with discoverability
 
-**Why this fails:**
-- ❌ "Time" is not a user intention ("I want to manage time" is vague)
-- ❌ AI as primary nav wastes limited mobile slots
-- ❌ No daily dashboard/overview
-- ❌ Focus still buried in Time tab
+**Implemented:**
+- ✅ 5-section primary navigation (Calendar, Tasks, Focus, Social, Profile)
+- ✅ Focus promoted to primary nav
+- ✅ Marcel AI accessible in Tasks section
+- ✅ Social features unified (merged Hub + Spaces)
+- ✅ All navigation components updated
+
+**Result:** Feature discoverability dramatically improved, max 2-tap access established
 
 ---
 
-## Feature-Specific Implementation Details ✅
+### Phase 2: Today Dashboard (2-3 Weeks)
 
-### 🎯 Focus Sessions
-**Previous state:** Tab 4 of 4 in Goals (buried 3 clicks deep)
-**Current state:** ✅ Primary navigation item
+**Goal:** Unified daily workflow view
 
-**Implemented structure:**
-```
-Focus (Primary Nav)
-├─ Timer Tab (start solo/group sessions, link to quest/journey)
-└─ Sessions Tab (history, completed sessions, stats)
-```
+**Tasks:**
+1. **Design Today component** (Week 1)
+   - Wireframe daily dashboard layout
+   - Design habit completion UI
+   - Design quick-action buttons
+   - Mobile-responsive design
 
-**Achieved goals:**
-- ✅ Unique competitive advantage now visible
-- ✅ 1-tap access to start focus sessions
-- ✅ Social/multiplayer component easily discoverable
-- ✅ Premium monetization opportunity maximized
+2. **Implement Today aggregation** (Week 2)
+   - Fetch today's habits (due today)
+   - Fetch active quests (in-progress or todo)
+   - Fetch today's calendar events
+   - Fetch active focus sessions
+   - Marcel AI daily suggestions endpoint
 
-### 🤖 Marcel AI
-**Previous state:** Hidden (no nav link, users had to type /chat URL)
-**Current state:** ✅ 4th tab in Tasks section
+3. **Smart landing page** (Week 2)
+   - Make Today the default route after login
+   - Cache for performance (localStorage + API)
+   - Real-time updates (WebSocket integration)
 
-**Implemented structure:**
-```
-Tasks (Primary Nav)
-├─ Quests Tab
-├─ Habits Tab
-├─ Journeys Tab
-└─ AI Tab (Marcel Chat) ← NEW
-```
+4. **A/B testing** (Week 3)
+   - 50% users see Today dashboard
+   - 50% users see Calendar (current default)
+   - Measure engagement, retention, feature usage
+   - Collect qualitative feedback
 
-**Achieved goals:**
-- ✅ Premium feature now discoverable
-- ✅ 2-tap access (Tasks > AI)
-- ✅ Context-appropriate placement (AI assists with task planning)
-- ✅ Cross-cutting functionality preserved (creates quests, events, habits)
-
-**Future consideration:**
-- Floating action button for global access (Phase 2 enhancement)
-
-### 📋 Quests, Habits, Journeys
-**Previous state:** All in Goals (with Focus as 4th tab)
-**Current state:** ✅ Unified in Tasks section
-
-**Implemented structure:**
-```
-Tasks (Primary Nav)
-├─ Quests Tab (default - most frequent)
-│  ├─ Filter by journey
-│  └─ Filter by status (todo/doing/done)
-├─ Habits Tab
-│  ├─ Daily check-ins
-│  └─ Streak tracking
-├─ Journeys Tab
-│  ├─ Personal and team journeys
-│  └─ Container for organizing quests
-└─ AI Tab (Marcel Chat)
-```
-
-**Habits placement decision:**
-- ✅ **Kept in Tasks** for Option B implementation
-- Planning mindset: "what habits do I want to build?"
-- **Future consideration:** Move to Focus section in Phase 2
-  - Would align with execution mindset
-  - Natural fit with focus sessions
-  - Streaks align with XP gamification
-
-### 👥 Social (Merged Hub + Spaces)
-**Previous state:** Separate Hub and Spaces nav items
-**Current state:** ✅ Unified Social section
-
-**Implemented structure:**
-```
-Social (Primary Nav)
-├─ Friends Tab
-│  ├─ Friend list with search
-│  ├─ Activity feed (recent completions, active sessions)
-│  ├─ Pending invitations
-│  └─ Send friend invites
-├─ Spaces Tab
-│  ├─ My spaces (organized by Leading/Member Of)
-│  ├─ Space detail: quests, journeys, chat, members
-│  └─ Create/join space
-└─ Leaderboard Tab
-   ├─ Podium view (top 3)
-   └─ Full rankings
-```
-
-**Achieved goals:**
-- ✅ Unified multiplayer features (one destination for "people")
-- ✅ Reduced cognitive load (no more "Hub vs Spaces?" confusion)
-- ✅ Freed nav slot for Focus promotion
-- ✅ Spaces are "friends with structure" (clear mental model)
+**Success criteria:**
+- Daily active engagement +30%
+- Time to first action -40%
+- Feature discovery rate +50%
+- User satisfaction score +25%
 
 ---
 
-## Mobile vs Desktop Considerations
+### Phase 3: AI Integration (4-6 Weeks)
 
-### Mobile (Bottom Nav - 5 slots max)
-**Current Implementation: Option B ✅**
-```
-[Calendar] [Tasks] [Focus] [Social] [Profile]
-```
-- ✅ Each icon is clear and distinct
-- ✅ Focus promoted to primary visibility (1 tap)
-- ✅ Social unified (one icon for all people features)
-- ✅ All 5 slots efficiently used
-- ✅ Maximum 2 taps to reach any feature
+**Goal:** Make Marcel AI proactive and contextual
 
-**Benefits of current layout:**
-- Calendar icon: solar:calendar-bold-duotone
-- Tasks icon: solar:check-circle-bold-duotone
-- Focus icon: solar:meditation-bold-duotone (prominent placement)
-- Social icon: solar:users-group-rounded-bold-duotone
-- Profile icon: (user avatar/stats)
+**Tasks:**
+1. **Floating AI button** (Week 4)
+   - Add global AI button (bottom-right corner)
+   - Keyboard shortcut: Cmd/Ctrl+I
+   - Context-aware: "Current page: Tasks > Quests"
 
-### Desktop (Sidebar - 6+ items possible)
-**Current Implementation: Same as Mobile**
-```
-[Calendar] [Tasks] [Focus] [Social] [Profile]
-```
-- Desktop uses same 5-item structure for consistency
-- Collapsible sidebar (280px → 80px)
-- Notification counters on Social (invites + unread messages)
-- Profile shows XP, level, and gold
+2. **Proactive AI suggestions** (Week 5)
+   - AI suggestions card on Today dashboard
+   - "You have 3 habits due and a standup at 10am. Start with morning meditation?"
+   - Smart focus session suggestions based on calendar
 
-**Future Enhancement (Phase 2):**
-```
-[Today] [Calendar] [Tasks] [Focus] [Social] [Profile]
-```
-- Desktop has room for 6th item (Today dashboard)
-- Today = daily overview, Calendar = full event management
-- Would provide power users with quick dashboard view
+3. **Contextual AI actions** (Week 6)
+   - Right-click quest → "Ask Marcel to break this down"
+   - Select calendar event → "Create focus session for this"
+   - Habit streak at risk → Marcel reminder + suggestion
+
+**Success criteria:**
+- AI usage +200%
+- Premium conversion rate +50%
+- User satisfaction with AI suggestions >80%
 
 ---
 
-## Implementation Timeline
+### Phase 4: Intelligence Layer (8-12 Weeks)
 
-### Phase 1: Critical Fixes ✅ COMPLETED (2026-02-23)
-1. ✅ **Promoted Focus** to primary navigation
-2. ✅ **Added Marcel AI** to Tasks as 4th tab
-3. ✅ **Merged Hub + Spaces** into unified Social section
-4. ✅ **Renamed Goals to Tasks** for clarity
-5. ✅ Updated navigation icons and labels
+**Goal:** System cohesion and smart workflows
 
-**Impact achieved:**
-- Feature discoverability dramatically improved
-- Focus sessions accessible in 1 tap (was 3)
-- Marcel AI discoverable in 2 taps (was hidden)
-- Social features unified under clear mental model
-- Minimal code changes (stable implementation)
+**Tasks:**
+1. **Cross-feature automation**
+   - Calendar event → Auto-suggest focus session
+   - Quest completion → Auto-prompt related habits
+   - Journey milestone → Celebration + team notification
 
-### Phase 2: Workflow Enhancements (Future - 2-3 weeks)
-1. **Create Today dashboard** (Option A enhancement)
-   - Unified view of today's events, habits, and quests
-   - Quick-start focus session button
-   - Marcel AI suggestions card
-2. **A/B test Habits placement**
-   - Current: Tasks section (planning mindset)
-   - Test: Focus section (execution mindset)
-   - Collect user behavior data before deciding
-3. **Add floating AI button** (optional enhancement)
-   - Global access to Marcel AI from any page
-   - Alternative to navigating to Tasks > AI tab
-4. **Mobile navigation optimization**
-   - Swipe gestures between tabs
-   - Long-press for quick actions
-
-**Impact:** Enhanced daily workflow, reduced context switching
-
-### Phase 3: Advanced Integration (Future - 4+ weeks)
-1. **Cross-feature intelligence**
-   - Calendar events → auto-suggest focus sessions
-   - Completed quests → trigger habit check-ins
-   - Marcel AI proactive suggestions on Today dashboard
-2. **Unified notifications system**
-   - Consolidated notification center
+2. **Smart notifications**
+   - Unified notification center
+   - Priority indicators (urgent/important)
    - Smart grouping (social, tasks, system)
-   - Priority indicators
-3. **Command palette enhancements** (Cmd+K)
-   - Quick navigation to any quest/journey/space
-   - Actions: "Start focus session", "Create quest", etc.
-   - Recent items and smart suggestions
-4. **Analytics dashboard**
-   - Focus session statistics
+   - Notification preferences
+
+3. **Analytics dashboard**
+   - Focus session statistics (time, frequency, sessions)
    - Habit streak visualizations
    - Quest completion trends
+   - Journey progress tracking
+   - Social engagement metrics
 
-**Impact:** System cohesion, "intelligent productivity" experience
+4. **Command palette enhancements**
+   - Recent items (last 5 quests/journeys/spaces)
+   - Quick actions: "Start focus", "Create quest"
+   - Smart search (fuzzy matching)
+   - Action history
+
+**Success criteria:**
+- "Feels intelligent" user feedback >75%
+- Cross-feature action usage +150%
+- Power user adoption +100%
 
 ---
 
-## Success Metrics (Post-Implementation)
+## Success Metrics
 
-### Key Metrics to Track
+### Key Performance Indicators
 
-**Baseline Period:** 2 weeks before Option B (Feb 9-22, 2026)
-**Comparison Period:** 2 weeks after Option B (Feb 23-Mar 8, 2026)
+**Baseline Period:** First 2 weeks after Phase 1 (Feb 23 - Mar 8, 2026)
 
-#### 1. Focus Session Engagement
-- **Metric:** Focus session starts per day
-- **Expected:** +200% increase (Focus was buried, now prominent)
-- **Why:** 1-tap access vs 3 taps, visible in primary nav
+#### 1. Feature Discoverability
+```
+Metric: % of users who discover each feature within 7 days
+Target: >80% for all primary features
 
-#### 2. Marcel AI Discovery & Usage
-- **Metrics:**
-  - First-time AI chat opens
-  - Daily active AI users
-  - AI actions approved (quest/event/habit creation)
-- **Expected:** +500% increase (was completely hidden)
-- **Why:** Now discoverable in Tasks > AI tab with clear icon
+Tracking:
+- Focus session starts
+- Marcel AI opens
+- Social section visits
+- Command palette usage
+```
 
-#### 3. Social Feature Engagement
-- **Metrics:**
-  - Friend invitations sent
-  - Space messages sent
-  - Leaderboard views
-  - Time spent in Social section
-- **Expected:** +30-50% increase
-- **Why:** Unified destination reduces confusion, easier to find
+#### 2. Navigation Efficiency
+```
+Metric: Average taps to reach target feature
+Target: <2 taps for all features
 
-#### 4. Navigation Efficiency
-- **Metrics:**
-  - Average sections visited per session
-  - Average taps to reach target feature
-  - Session duration (may decrease with better nav)
-- **Expected:** 3+ sections visited (was 1-2)
-- **Why:** Better discoverability encourages exploration
+Tracking:
+- Tap count distribution
+- Most common paths
+- Drop-off points
+```
 
-#### 5. New User Onboarding
-- **Metrics:**
-  - % of new users who discover Focus within 3 days
-  - % of new users who try Marcel AI within 7 days
-  - Feature discovery rate (all 5 sections visited)
-- **Expected:** +50% discovery rate
-- **Why:** Critical features no longer buried
+#### 3. Daily Engagement
+```
+Metric: Average sections visited per session
+Target: 3+ sections per session
 
-#### 6. Retention & Engagement
-- **Metrics:**
-  - Day 7 retention rate
-  - Day 30 retention rate
-  - Daily active users (DAU)
-- **Expected:** +30% retention improvement
-- **Why:** Better feature discovery = more value perceived
+Tracking:
+- Section visit frequency
+- Session duration per section
+- Cross-section navigation patterns
+```
 
-### Data Collection Points
+#### 4. User Retention
+```
+Metric: Day 7 and Day 30 retention rates
+Target: +30% improvement after Today dashboard
+
+Tracking:
+- New user retention curves
+- Feature engagement correlation
+- Churn reasons (exit surveys)
+```
+
+#### 5. Premium Conversion
+```
+Metric: Free → Premium conversion rate
+Target: +50% after AI enhancements
+
+Tracking:
+- AI feature usage (free vs premium)
+- Paywall encounters
+- Conversion funnel
+- Upsell success rate
+```
+
+### Data Collection Implementation
+
 ```typescript
-// Track navigation events
-analytics.track('nav_item_clicked', {
+// Navigation tracking
+analytics.track('nav_clicked', {
   from: 'calendar',
   to: 'focus',
+  method: 'bottom_nav', // or 'sidebar', 'command_palette'
   timestamp: Date.now()
 })
 
-// Track feature discovery
+// Feature discovery
 analytics.track('feature_first_use', {
   feature: 'marcel_ai',
   days_since_signup: 3,
-  discovery_method: 'navigation' // vs 'onboarding', 'friend_referral'
+  discovery_method: 'navigation', // or 'onboarding', 'friend'
+  context: 'tasks_section'
 })
 
-// Track user journey completion
-analytics.track('journey_completed', {
-  journey: 'daily_productivity',
-  steps: ['calendar', 'tasks_quests', 'focus_timer'],
-  duration_seconds: 45
+// Workflow completion
+analytics.track('daily_workflow_completed', {
+  steps: ['today', 'habits_checked', 'focus_started'],
+  duration_seconds: 45,
+  interruptions: 0
+})
+
+// Today dashboard (Phase 2)
+analytics.track('today_dashboard_viewed', {
+  items_shown: {
+    habits: 3,
+    quests: 5,
+    events: 2,
+    ai_suggestions: 1
+  },
+  first_action: 'habit_completed',
+  time_to_action_ms: 1200
 })
 ```
 
 ---
 
-## Current Status & Next Steps
+## Competitor Analysis
 
-### ✅ Option B Implementation Complete (2026-02-23)
+### How Marcel Compares
 
-**What was implemented:**
-1. ✅ Renamed "Goals" → "Tasks"
-2. ✅ Added Marcel AI as 4th tab in Tasks
-3. ✅ Promoted Focus to primary navigation
-4. ✅ Merged Hub + Spaces into "Social" section
-5. ✅ Updated all navigation components, routing, and references
+#### Todoist
+**Navigation:** Today | Inbox | Upcoming | Filters | Projects
+**Insight:** "Today" is primary - daily workflow front and center
+**Marcel:** We have Calendar first; **Today dashboard would match Todoist's approach**
 
-**What this achieved:**
-- Focus sessions now discoverable (1 tap vs 3)
-- Marcel AI now accessible (2 taps vs hidden)
-- Social features unified (clear mental model)
-- Navigation efficiency improved (max 2 taps to any feature)
+#### Notion
+**Navigation:** Workspace switcher + flexible sidebar
+**Insight:** Highly customizable but requires setup
+**Marcel:** Structured navigation better for new users, less flexible for power users
 
-### 📊 Immediate Next Steps (Week 1-2)
+#### Habitica
+**Navigation:** Tasks | Inventory | Social | Guilds
+**Insight:** Gamification + productivity (similar to Marcel)
+**Marcel:** ✅ Similar structure with Tasks, Social, Profile (progression)
 
-1. **Deploy to production**
-   - Monitor for bugs or broken routes
-   - Verify mobile and desktop navigation work correctly
-   - Test all deep links and redirects
+#### Focusmate
+**Navigation:** Sessions | Schedule | Profile
+**Insight:** Entire app built around focus sessions
+**Marcel:** ✅ Focus now primary nav (previously buried)
 
-2. **Collect baseline metrics**
-   - Set up analytics tracking (see "Success Metrics" section)
-   - Establish baseline for Focus usage, AI usage, Social engagement
-   - Track navigation patterns and user journeys
+#### ClickUp
+**Navigation:** Home | Inbox | Docs | Dashboards | Goals
+**Insight:** "Home" dashboard as entry point
+**Marcel:** **Today dashboard would provide similar unified view**
 
-3. **User communication**
-   - Announce navigation improvements in app
-   - Highlight Focus feature prominently
-   - Educate users about Marcel AI availability
+#### Sunsama
+**Navigation:** Today | Calendar | Backlog | Objectives
+**Insight:** Daily planning workflow emphasized
+**Marcel:** Similar to Today dashboard proposal
 
-4. **Monitor & iterate**
-   - Watch for user confusion or issues
-   - Collect qualitative feedback
-   - Prepare A/B test for Option A features
+### Competitive Positioning
 
-### 🚀 Future Roadmap: Toward Option A (Month 2-3)
+**Marcel's unique value:**
+- ✅ **Focus sessions** with multiplayer (rare feature)
+- ✅ **AI scheduling** assistant (Marcel chat)
+- ✅ **Gamification** with XP, levels, streaks
+- ✅ **Social productivity** (spaces, leaderboard)
 
-1. **Build Today dashboard** (Phase 2)
-   - Design unified daily view
-   - Integrate calendar, tasks, habits, focus
-   - Add Marcel AI suggestions card
-   - A/B test with 20% of users
+**Where Marcel leads:**
+- Group focus sessions (better than Focusmate's 1:1 only)
+- AI integration (better than Todoist's basic suggestions)
+- Full feature integration (calendar + tasks + focus + social)
 
-2. **Test Habits placement** (Phase 2)
-   - Current: Tasks section
-   - Alternative: Focus section
-   - Run 2-week A/B test to measure engagement
+**Where Marcel can improve:**
+- ❌ No "Today" dashboard (Todoist, Sunsama have this)
+- ❌ AI not as prominent as it should be
+- ⚠️ Habits placement (could be more execution-focused)
 
-3. **Advanced integration** (Phase 3)
-   - Cross-feature intelligence
-   - Unified notifications
-   - Enhanced command palette
-
-### 💡 Key Insights from This Analysis
-
-**Problem solved:**
-- Marcel had impressive technical depth but poor feature discoverability
-- Critical features were buried (Focus) or hidden (Marcel AI)
-- Similar features were confusingly separated (Hub vs Spaces)
-- No clear daily workflow
-
-**Solution implemented:**
-- Navigation now optimizes for user workflow, not code organization
-- Unique competitive advantages prominently displayed
-- Premium features discoverable (drives conversions)
-- Clear mental models (Tasks, Focus, Social)
-
-**What's still needed:**
-- Unified "Today" view (Option A enhancement)
-- Cross-feature intelligence (calendar + focus + AI)
-- Continued iteration based on user data
-
-**Bottom line:** Marcel is no longer hiding its best features. The navigation now tells a clear story: plan your tasks, focus on execution, connect with others, track your progress.
+**Bottom line:** Marcel has unique features that competitors lack (group focus, AI scheduling, gamification). Adding Today dashboard would make Marcel's daily workflow best-in-class.
 
 ---
 
-## Appendix: Competitor Comparison
+## Technical Implementation Notes
 
-### Todoist
-**Nav:** Today | Inbox | Upcoming | Filters | Projects
-**Insight:** "Today" is PRIMARY - daily workflow matters most
-**Marcel comparison:** We have Calendar first instead of Today (potential Phase 2 improvement)
+### Navigation Configuration
 
-### Notion
-**Nav:** Workspace switcher + sidebar with pages
-**Insight:** Flexible but requires user configuration
-**Marcel comparison:** We have structured navigation (better for new users)
+**Primary source:** `/frontend/src/lib/pages.ts`
+```typescript
+export const pages = [
+  { href: "/calendar", icon: "solar:calendar-bold-duotone", label: "Calendar" },
+  { href: "/tasks", icon: "solar:check-circle-bold-duotone", label: "Tasks" },
+  { href: "/focus", icon: "solar:meditation-bold-duotone", label: "Focus" },
+  { href: "/social", icon: "solar:users-group-rounded-bold-duotone", label: "Social" },
+]
+```
 
-### Habitica
-**Nav:** Tasks | Inventory | Social | Guilds
-**Insight:** Gamification mixed with productivity (similar to Marcel)
-**Marcel comparison:** ✅ Similar structure now with Tasks, Social, Profile
+**Navigation components:**
+- Desktop: `/frontend/src/lib/components/Sidebar.svelte`
+- Mobile: `/frontend/src/lib/components/MobileNavbar.svelte`
+- Command: `/frontend/src/lib/components/CommandBar.svelte`
 
-### Focusmate
-**Nav:** Sessions | Schedule | Profile
-**Insight:** ENTIRE APP is about focus sessions
-**Marcel comparison:** ✅ Focus now primary nav (was buried!)
+### Routing Structure
 
-### ClickUp
-**Nav:** Home | Inbox | Docs | Dashboards | Goals
-**Insight:** "Home" dashboard for daily overview
-**Marcel comparison:** Calendar serves as starting point (could add Today view in Phase 2)
+**SvelteKit file-based routing:**
+```
+src/routes/(app)/
+├── calendar/+page.svelte
+├── tasks/
+│   ├── +page.svelte (tabs: Quests, Habits, Journeys, AI)
+│   ├── QuestsTab.svelte
+│   ├── HabitsTab.svelte
+│   └── JourneysTab.svelte
+├── focus/
+│   └── +page.svelte (tabs: Timer, Sessions)
+├── social/
+│   ├── +page.svelte
+│   ├── FriendsTab.svelte
+│   ├── SpacesTab.svelte
+│   └── LeaderboardTab.svelte
+└── profile/+page.svelte
+```
 
-**Common pattern:** Apps either have "Today/Home" dashboard OR put most frequent action first
+### State Management
 
-**Marcel (before Option B):** Calendar first, Focus buried, AI hidden ❌
-**Marcel (after Option B):** Calendar | Tasks | Focus | Social | Profile ✅
-**Marcel (Option A future):** Today | Plan | Focus | Social | Profile 🚀
+**Tab preferences:** `localStorage`
+```typescript
+// Persist user's last active tab per section
+localStorage.setItem('tasksDefaultTab', 'quests') // 'quests' | 'habits' | 'journeys'
+localStorage.setItem('focusDefaultTab', 'timer')  // 'timer' | 'sessions'
+localStorage.setItem('socialDefaultTab', 'friends') // 'friends' | 'spaces' | 'leaderboard'
+```
+
+**Real-time data:** Svelte stores + WebSocket
+```typescript
+// User, spaces, invites, messages all use reactive stores
+import { user, spaces, invites, unreadMessages } from '$lib/stores'
+```
+
+### Deep Linking
+
+**Query parameters for context:**
+```
+/social?spaceId=123        // Opens Social > Spaces > Space Detail
+/tasks?tab=habits          // Opens Tasks > Habits tab
+/focus?session=456         // Opens Focus with session 456
+```
+
+---
+
+## Conclusion
+
+Marcel's current navigation structure provides **solid foundation** for productivity workflows with clear discoverability and efficient access patterns. All features are within 2 taps, Focus and AI are prominent, and social features are unified.
+
+**Primary enhancement opportunity:** Add a unified "Today" dashboard to become the daily workflow hub, aggregating habits, quests, events, and AI suggestions in one view.
+
+**Implementation approach:**
+1. ✅ Phase 1 complete - Strong navigation base
+2. 🎯 Phase 2 next - Today dashboard (2-3 weeks)
+3. 🚀 Phase 3-4 - AI integration and intelligence layer
+
+**Expected outcome:** Marcel becomes best-in-class for daily productivity workflows, with competitive advantages (group focus, AI scheduling, gamification) made prominent and accessible.
+
+---
+
+**Document Version:** 2.0 (2026-02-23)
+**Status:** Phase 1 Complete, Phase 2 Planning
