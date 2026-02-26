@@ -30,6 +30,18 @@ const (
 
 type clearMessageMsg struct{}
 
+type dataLoadedMsg struct {
+	data *models.AppData
+	err  error
+}
+
+func loadDataCmd(s *storage.Storage) tea.Cmd {
+	return func() tea.Msg {
+		data, err := s.Load()
+		return dataLoadedMsg{data: data, err: err}
+	}
+}
+
 func clearMessageAfter(d time.Duration) tea.Cmd {
 	return tea.Tick(d, func(t time.Time) tea.Msg {
 		return clearMessageMsg{}
@@ -97,20 +109,12 @@ func NewModel() (*Model, error) {
 		return m, nil
 	}
 
-	data, err := s.Load()
-	if err != nil {
-		m.mode = ErrorView
-		m.errorMessage = fmt.Sprintf("Failed to load quests: %v", err)
-		return m, nil
-	}
-
-	m.data = data
-	m.mode = QuestListView
-	m.currentSection = data.CurrentSection
-
 	return m, nil
 }
 
 func (m Model) Init() tea.Cmd {
-	return tea.Batch(m.spinner.Tick, tea.EnterAltScreen)
+	if m.mode == LoadingView {
+		return tea.Batch(m.spinner.Tick, loadDataCmd(m.storage))
+	}
+	return m.spinner.Tick
 }

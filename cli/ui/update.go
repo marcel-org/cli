@@ -1,6 +1,8 @@
 package ui
 
 import (
+	"fmt"
+
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -64,6 +66,16 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		var cmd tea.Cmd
 		m.spinner, cmd = m.spinner.Update(msg)
 		cmds = append(cmds, cmd)
+
+	case dataLoadedMsg:
+		if msg.err != nil {
+			m.mode = ErrorView
+			m.errorMessage = fmt.Sprintf("Failed to load data: %v", msg.err)
+		} else {
+			m.data = msg.data
+			m.mode = QuestListView
+			m.currentSection = msg.data.CurrentSection
+		}
 
 	case clearMessageMsg:
 		m.message = ""
