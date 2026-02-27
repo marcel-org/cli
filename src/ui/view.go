@@ -102,10 +102,10 @@ func (m Model) renderQuestListView() string {
 		return topSection
 	}
 
-	availableHeight := m.height - len(statusBars)
-	topPadded := lipgloss.NewStyle().Height(availableHeight).Render(topSection)
-
 	bottomSection := lipgloss.JoinVertical(lipgloss.Left, statusBars...)
+
+	topHeight := m.height - lipgloss.Height(bottomSection)
+	topPadded := lipgloss.NewStyle().Height(topHeight).Render(topSection)
 
 	return lipgloss.JoinVertical(
 		lipgloss.Left,
@@ -362,10 +362,10 @@ func (m Model) renderJourneyDetailView() string {
 		return topSection
 	}
 
-	availableHeight := m.height - len(statusBars)
-	topPadded := lipgloss.NewStyle().Height(availableHeight).Render(topSection)
-
 	bottomSection := lipgloss.JoinVertical(lipgloss.Left, statusBars...)
+
+	topHeight := m.height - lipgloss.Height(bottomSection)
+	topPadded := lipgloss.NewStyle().Height(topHeight).Render(topSection)
 
 	return lipgloss.JoinVertical(
 		lipgloss.Left,
