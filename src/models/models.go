@@ -33,37 +33,37 @@ type Journey struct {
 }
 
 type Habit struct {
-	ID              int       `json:"id"`
-	Name            string    `json:"name"`
-	AuthorID        int       `json:"authorId"`
-	XPReward        int       `json:"xpReward"`
-	GoldReward      int       `json:"goldReward"`
-	CycleType       string    `json:"cycleType"`
-	CycleConfig     any       `json:"cycleConfig"`
-	Completed       []string  `json:"completed"`
-	CurrentStreak   int       `json:"currentStreak"`
-	MaxStreak       int       `json:"maxStreak"`
-	StartDate       time.Time `json:"startDate"`
-	EndDate         *time.Time `json:"endDate"`
-	CreatedAt       time.Time `json:"createdAt"`
-	UpdatedAt       time.Time `json:"updatedAt"`
-	CycleDescription string   `json:"cycleDescription"`
-	IsDueToday      bool      `json:"isDueToday"`
+	ID               int        `json:"id"`
+	Name             string     `json:"name"`
+	AuthorID         int        `json:"authorId"`
+	XPReward         int        `json:"xpReward"`
+	GoldReward       int        `json:"goldReward"`
+	CycleType        string     `json:"cycleType"`
+	CycleConfig      any        `json:"cycleConfig"`
+	Completed        []string   `json:"completed"`
+	CurrentStreak    int        `json:"currentStreak"`
+	MaxStreak        int        `json:"maxStreak"`
+	StartDate        time.Time  `json:"startDate"`
+	EndDate          *time.Time `json:"endDate"`
+	CreatedAt        time.Time  `json:"createdAt"`
+	UpdatedAt        time.Time  `json:"updatedAt"`
+	CycleDescription string     `json:"cycleDescription"`
+	IsDueToday       bool       `json:"isDueToday"`
 }
 
 type Event struct {
-	ID               int       `json:"id"`
-	Title            string    `json:"title"`
-	Date             time.Time `json:"date"`
+	ID               int        `json:"id"`
+	Title            string     `json:"title"`
+	Date             time.Time  `json:"date"`
 	EndDate          *time.Time `json:"endDate"`
-	Time             *string   `json:"time"`
-	EndTime          *string   `json:"endTime"`
-	Location         *string   `json:"location"`
-	Description      *string   `json:"description"`
-	AuthorID         int       `json:"authorId"`
-	GoogleCalendarID *string   `json:"googleCalendarId"`
-	CreatedAt        time.Time `json:"createdAt"`
-	UpdatedAt        time.Time `json:"updatedAt"`
+	Time             *string    `json:"time"`
+	EndTime          *string    `json:"endTime"`
+	Location         *string    `json:"location"`
+	Description      *string    `json:"description"`
+	AuthorID         int        `json:"authorId"`
+	GoogleCalendarID *string    `json:"googleCalendarId"`
+	CreatedAt        time.Time  `json:"createdAt"`
+	UpdatedAt        time.Time  `json:"updatedAt"`
 }
 
 type AppData struct {

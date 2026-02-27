@@ -17,9 +17,9 @@ type HabitResponse struct {
 }
 
 type CreateHabitRequest struct {
-	Name       string `json:"name"`
-	CycleType  string `json:"cycleType"`
-	CycleConfig any   `json:"cycleConfig,omitempty"`
+	Name        string `json:"name"`
+	CycleType   string `json:"cycleType"`
+	CycleConfig any    `json:"cycleConfig,omitempty"`
 }
 
 type UpdateHabitRequest struct {
@@ -51,8 +51,8 @@ func (c *Client) GetHabits() ([]models.Habit, error) {
 
 func (c *Client) CreateHabit(name, cycleType string, cycleConfig any) (*models.Habit, error) {
 	req := CreateHabitRequest{
-		Name:       name,
-		CycleType:  cycleType,
+		Name:        name,
+		CycleType:   cycleType,
 		CycleConfig: cycleConfig,
 	}
 

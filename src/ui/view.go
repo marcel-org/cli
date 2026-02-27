@@ -162,7 +162,7 @@ func (m Model) renderErrorView() string {
 	title := ErrorStyle.Render("⚠ Error")
 
 	content := lipgloss.NewStyle().
-		Width(m.width - 8).
+		Width(m.width-8).
 		Padding(1, 2).
 		Render(m.errorMessage)
 

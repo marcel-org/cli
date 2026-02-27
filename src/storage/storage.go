@@ -17,7 +17,7 @@ type Storage struct {
 }
 
 type CacheData struct {
-	Timestamp time.Time       `json:"timestamp"`
+	Timestamp time.Time        `json:"timestamp"`
 	Journeys  []models.Journey `json:"journeys"`
 	Quests    []models.Quest   `json:"quests"`
 	Habits    []models.Habit   `json:"habits"`
