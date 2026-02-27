@@ -2,6 +2,7 @@ package ui
 
 import (
 	"fmt"
+	"marcel-cli/models"
 	"time"
 
 	"github.com/charmbracelet/bubbles/spinner"
@@ -75,14 +76,21 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case dataLoadedMsg:
 		if msg.err != nil {
-			m.mode = ErrorView
-			m.errorMessage = fmt.Sprintf("Failed to load data: %v", msg.err)
+			cmds = append(cmds, checkAuthCmd(m.storage))
 		} else {
 			m.data = msg.data
 			m.mode = QuestListView
 			m.currentSection = msg.data.CurrentSection
 			m.syncStatus = SyncStatusSyncing
 			cmds = append(cmds, backgroundSyncCmd(m.storage), m.syncSpinner.Tick)
+		}
+
+	case authCheckMsg:
+		if msg.err != nil {
+			m.mode = ErrorView
+			m.errorMessage = fmt.Sprintf("Authentication failed: %v\n\nSet your token in ~/.marcel.token or MARCEL_TOKEN environment variable", msg.err)
+		} else {
+			cmds = append(cmds, loadFromAPICmd(m.storage))
 		}
 
 	case backgroundSyncMsg:
@@ -95,6 +103,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.habitList = newHabitList(m.data, m.width-4, m.height-10)
 			m.journeyList = newJourneyList(m.data, m.width-4, m.height-10)
 			m.calendar.SetEvents(m.data.Events)
+
+			var allQuests []models.Quest
+			for _, journey := range m.data.Journeys {
+				allQuests = append(allQuests, journey.Quests...)
+			}
+			m.storage.SaveToCache(m.data.Journeys, allQuests, m.data.Habits, m.data.Events)
 			cmds = append(cmds, clearSyncStatusAfter(3*time.Second))
 		}
 

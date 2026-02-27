@@ -1,7 +1,6 @@
 package ui
 
 import (
-	"fmt"
 	"marcel-cli/models"
 	"marcel-cli/storage"
 	"marcel-cli/ui/components"
@@ -42,12 +41,27 @@ type backgroundSyncMsg struct {
 	err  error
 }
 
+type authCheckMsg struct {
+	err error
+}
+
 func loadDataCmd(s *storage.Storage) tea.Cmd {
 	return func() tea.Msg {
 		data, err := s.LoadFromCache()
-		if err != nil {
-			data, err = s.Load()
-		}
+		return dataLoadedMsg{data: data, err: err}
+	}
+}
+
+func checkAuthCmd(s *storage.Storage) tea.Cmd {
+	return func() tea.Msg {
+		err := s.GetAPIClient().CheckAuth()
+		return authCheckMsg{err: err}
+	}
+}
+
+func loadFromAPICmd(s *storage.Storage) tea.Cmd {
+	return func() tea.Msg {
+		data, err := s.Load()
 		return dataLoadedMsg{data: data, err: err}
 	}
 }
@@ -141,12 +155,6 @@ func NewModel() (*Model, error) {
 		currentSection: "quests",
 		calendar:       cal,
 		syncStatus:     SyncStatusNone,
-	}
-
-	if err := s.GetAPIClient().CheckAuth(); err != nil {
-		m.mode = ErrorView
-		m.errorMessage = fmt.Sprintf("Authentication failed: %v\n\nPlease set MARCEL_TOKEN environment variable", err)
-		return m, nil
 	}
 
 	return m, nil

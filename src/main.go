@@ -66,7 +66,8 @@ Input Mode:
     Backspace    Delete character
 
 CONFIGURATION:
-    Auth token: Set MARCEL_TOKEN environment variable
+    Auth token: Create ~/.marcel.token file with your token
+                OR set MARCEL_TOKEN environment variable
 
 For more information, visit: https://github.com/marcel-org/cli`)
 }
