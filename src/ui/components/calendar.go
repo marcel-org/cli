@@ -232,7 +232,7 @@ func (c *Calendar) renderMonthCell(date time.Time) string {
 	events := c.getEventsForDate(date)
 	var cellContent string
 	if len(events) > 0 {
-		cellContent = fmt.Sprintf("  %s*   ", dayStr)
+		cellContent = fmt.Sprintf("  %s●   ", dayStr)
 	} else {
 		cellContent = fmt.Sprintf("  %s    ", dayStr)
 	}
