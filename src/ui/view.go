@@ -134,7 +134,7 @@ func renderTabs(currentSection string, width int) string {
 	tabs := lipgloss.JoinHorizontal(
 		lipgloss.Left,
 		questStyle.Render("󰝖 Quests"),
-		habitStyle.Render("\uf525 Habits"),
+		habitStyle.Render("\uf06d Habits"),
 		journeyStyle.Render("󰺄 Journeys"),
 		calendarStyle.Render("󰃭 Calendar"),
 	)
