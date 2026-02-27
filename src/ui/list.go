@@ -88,10 +88,15 @@ func (d questDelegate) Render(w io.Writer, m list.Model, index int, listItem lis
 			Foreground(gray).
 			Render(fmt.Sprintf(" %s%s", journey, reward))
 
+		titleText := fmt.Sprintf("%s %s", checkbox, i.quest.Title)
+
 		if isSelected {
-			str = SelectedItemStyle.Render(fmt.Sprintf("%s %s", checkbox, i.quest.Title)) + rewardStyled
+			str = SelectedItemStyle.Render(titleText) + rewardStyled
 		} else {
-			str = NormalItemStyle.Render(fmt.Sprintf("%s %s", checkbox, i.quest.Title)) + rewardStyled
+			incompleteStyle := lipgloss.NewStyle().
+				Foreground(brandOrange).
+				Bold(true)
+			str = incompleteStyle.Render(titleText) + rewardStyled
 		}
 	}
 
@@ -99,16 +104,24 @@ func (d questDelegate) Render(w io.Writer, m list.Model, index int, listItem lis
 }
 
 func newQuestList(data *models.AppData, width, height int) list.Model {
-	items := []list.Item{}
+	incompleteItems := []list.Item{}
+	completedItems := []list.Item{}
 
 	for _, journey := range data.Journeys {
 		for _, quest := range journey.Quests {
-			items = append(items, questItem{
+			item := questItem{
 				quest:   quest,
 				journey: journey.Name,
-			})
+			}
+			if quest.Done {
+				completedItems = append(completedItems, item)
+			} else {
+				incompleteItems = append(incompleteItems, item)
+			}
 		}
 	}
+
+	items := append(incompleteItems, completedItems...)
 
 	delegate := questDelegate{}
 
@@ -308,14 +321,22 @@ func newJourneyList(data *models.AppData, width, height int) list.Model {
 }
 
 func newJourneyQuestList(journey *models.Journey, width, height int) list.Model {
-	items := []list.Item{}
+	incompleteItems := []list.Item{}
+	completedItems := []list.Item{}
 
 	for _, quest := range journey.Quests {
-		items = append(items, questItem{
+		item := questItem{
 			quest:   quest,
 			journey: journey.Name,
-		})
+		}
+		if quest.Done {
+			completedItems = append(completedItems, item)
+		} else {
+			incompleteItems = append(incompleteItems, item)
+		}
 	}
+
+	items := append(incompleteItems, completedItems...)
 
 	delegate := questDelegate{}
 
