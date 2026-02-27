@@ -154,23 +154,43 @@ func NewModel() (*Model, error) {
 	cal := components.NewCalendar()
 	cal.SetWeekStartDay(s.GetConfig().WeekStartDay)
 
+	cachedData, cacheErr := s.LoadFromCache()
+
+	mode := QuestListView
+	data := &models.AppData{}
+	if cacheErr == nil && cachedData != nil {
+		data = cachedData
+		mode = QuestListView
+	} else {
+		mode = LoadingView
+	}
+
 	m := &Model{
 		storage:        s,
-		mode:           LoadingView,
+		mode:           mode,
 		spinner:        sp,
 		syncSpinner:    syncSp,
-		data:           &models.AppData{},
-		currentSection: "quests",
+		data:           data,
+		currentSection: data.CurrentSection,
 		calendar:       cal,
 		syncStatus:     SyncStatusNone,
+	}
+
+	if data.CurrentSection == "" {
+		m.currentSection = "quests"
 	}
 
 	return m, nil
 }
 
 func (m Model) Init() tea.Cmd {
+	cmds := []tea.Cmd{m.syncSpinner.Tick}
+
 	if m.mode == LoadingView {
-		return tea.Batch(m.spinner.Tick, loadDataCmd(m.storage))
+		cmds = append(cmds, m.spinner.Tick, loadFromAPICmd(m.storage))
+	} else {
+		cmds = append(cmds, checkAuthCmd(m.storage))
 	}
-	return m.spinner.Tick
+
+	return tea.Batch(cmds...)
 }
