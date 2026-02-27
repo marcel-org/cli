@@ -81,6 +81,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.data = msg.data
 			m.mode = QuestListView
 			m.currentSection = msg.data.CurrentSection
+			m.questList = newQuestList(m.data, m.width-4, m.height-10)
+			m.habitList = newHabitList(m.data, m.width-4, m.height-10)
+			m.journeyList = newJourneyList(m.data, m.width-4, m.height-10)
+			m.calendar.SetEvents(m.data.Events)
 			m.syncStatus = SyncStatusSyncing
 			cmds = append(cmds, backgroundSyncCmd(m.storage), m.syncSpinner.Tick)
 		}
@@ -90,15 +94,24 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.mode = ErrorView
 			m.errorMessage = fmt.Sprintf("Authentication failed: %v\n\nSet your token in ~/.marcel.token or MARCEL_TOKEN environment variable", msg.err)
 		} else {
-			cmds = append(cmds, loadFromAPICmd(m.storage))
+			m.syncStatus = SyncStatusSyncing
+			cmds = append(cmds, backgroundSyncCmd(m.storage), m.syncSpinner.Tick)
 		}
 
 	case backgroundSyncMsg:
 		if msg.err != nil {
 			m.syncStatus = SyncStatusError
+			if m.mode == LoadingView {
+				m.mode = ErrorView
+				m.errorMessage = fmt.Sprintf("Failed to load data: %v", msg.err)
+			}
 		} else {
 			m.data = msg.data
 			m.syncStatus = SyncStatusSynced
+			if m.mode == LoadingView {
+				m.mode = QuestListView
+				m.currentSection = msg.data.CurrentSection
+			}
 			m.questList = newQuestList(m.data, m.width-4, m.height-10)
 			m.habitList = newHabitList(m.data, m.width-4, m.height-10)
 			m.journeyList = newJourneyList(m.data, m.width-4, m.height-10)
