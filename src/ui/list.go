@@ -84,33 +84,36 @@ func (d questDelegate) Render(w io.Writer, m list.Model, index int, listItem lis
 			str = title + meta
 		}
 	} else {
-		rewardStyled := lipgloss.NewStyle().
-			Foreground(gray).
-			Render(fmt.Sprintf(" %s%s", journey, reward))
+		journeyStyled := ""
+		if journey != "" && journey != "My Quests" {
+			journeyStyled = lipgloss.NewStyle().
+				Foreground(gray).
+				Render(fmt.Sprintf(" %s", journey))
+		}
 
 		titleText := fmt.Sprintf("%s %s", checkbox, i.quest.Title)
 
 		if isSelected {
-			str = SelectedItemStyle.Render(titleText) + rewardStyled
+			str = SelectedItemStyle.Render(titleText) + journeyStyled
 		} else {
-			difficultyColor := white
+			difficultyColor := "15"
 			switch i.quest.Difficulty {
 			case "easy":
-				difficultyColor = difficultyEasy
+				difficultyColor = "2"
 			case "medium":
-				difficultyColor = difficultyMedium
+				difficultyColor = "4"
 			case "hard":
-				difficultyColor = difficultyHard
+				difficultyColor = "5"
 			case "epic":
-				difficultyColor = difficultyEpic
+				difficultyColor = "1"
 			case "legendary":
-				difficultyColor = difficultyLegendary
+				difficultyColor = "3"
 			}
 
 			incompleteStyle := lipgloss.NewStyle().
-				Foreground(difficultyColor).
+				Foreground(lipgloss.Color(difficultyColor)).
 				Bold(true)
-			str = incompleteStyle.Render(titleText) + rewardStyled
+			str = incompleteStyle.Render(titleText) + journeyStyled
 		}
 	}
 
