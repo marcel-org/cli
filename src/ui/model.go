@@ -25,6 +25,10 @@ const (
 	JourneyFormView
 	HabitFormView
 	EventFormView
+	QuestEditFormView
+	JourneyEditFormView
+	HabitEditFormView
+	EventEditFormView
 )
 
 type clearMessageMsg struct{}
@@ -125,6 +129,10 @@ type Model struct {
 	journeyFormData   *JourneyForm
 	habitFormData     *HabitForm
 	eventFormData     *EventForm
+	editingQuest      *models.Quest
+	editingHabit      *models.Habit
+	editingJourney    *models.Journey
+	editingEvent      *models.Event
 	syncStatus        SyncStatus
 	syncSpinner       spinner.Model
 }

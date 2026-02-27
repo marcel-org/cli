@@ -17,7 +17,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmds = append(cmds, tea.ClearScreen)
 	}
 
-	if m.mode == QuestFormView || m.mode == JourneyFormView || m.mode == HabitFormView || m.mode == EventFormView {
+	if m.mode == QuestFormView || m.mode == JourneyFormView || m.mode == HabitFormView || m.mode == EventFormView ||
+		m.mode == QuestEditFormView || m.mode == JourneyEditFormView || m.mode == HabitEditFormView || m.mode == EventEditFormView {
 		return m.handleFormUpdate(msg)
 	}
 

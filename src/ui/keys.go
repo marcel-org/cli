@@ -38,6 +38,11 @@ func (m Model) handleQuestListKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			return m.showDeleteConfirm(item.quest), nil
 		}
 
+	case "e":
+		if item, ok := m.questList.SelectedItem().(questItem); ok {
+			return m.editQuest(item.quest)
+		}
+
 	default:
 		var cmd tea.Cmd
 		m.questList, cmd = m.questList.Update(msg)
@@ -78,6 +83,11 @@ func (m Model) handleHabitListKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case "d":
 		if item, ok := m.habitList.SelectedItem().(habitItem); ok {
 			return m.showDeleteConfirmHabit(item.habit), nil
+		}
+
+	case "e":
+		if item, ok := m.habitList.SelectedItem().(habitItem); ok {
+			return m.editHabit(item.habit)
 		}
 
 	default:
@@ -122,6 +132,11 @@ func (m Model) handleJourneyListKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			return m.showDeleteConfirmJourney(item.journey), nil
 		}
 
+	case "e":
+		if item, ok := m.journeyList.SelectedItem().(journeyItem); ok {
+			return m.editJourney(item.journey)
+		}
+
 	default:
 		var cmd tea.Cmd
 		m.journeyList, cmd = m.journeyList.Update(msg)
@@ -153,6 +168,13 @@ func (m Model) handleCalendarKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 			event := m.calendar.GetSelectedEvent()
 			if event != nil {
 				return m.showDeleteConfirmEvent(event), nil
+			}
+			return m, nil
+
+		case "e":
+			event := m.calendar.GetSelectedEvent()
+			if event != nil {
+				return m.editEvent(event)
 			}
 			return m, nil
 		}
@@ -224,6 +246,7 @@ func (m Model) handleJourneyDetailKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 
 	case "esc":
 		m.mode = QuestListView
+		m.currentSection = "journeys"
 		m.selectedJourney = nil
 		return m, nil
 
@@ -245,6 +268,11 @@ func (m Model) handleJourneyDetailKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	case "d":
 		if item, ok := m.journeyQuestList.SelectedItem().(questItem); ok {
 			return m.showDeleteConfirm(item.quest), nil
+		}
+
+	case "e":
+		if item, ok := m.journeyQuestList.SelectedItem().(questItem); ok {
+			return m.editQuest(item.quest)
 		}
 
 	default:
@@ -321,6 +349,23 @@ func (m Model) handleFormUpdate(msg tea.Msg) (tea.Model, tea.Cmd) {
 		form = m.eventForm
 		returnMode = QuestListView
 		m.currentSection = "calendar"
+	case QuestEditFormView:
+		form = m.questForm
+		if m.selectedJourney != nil {
+			returnMode = JourneyDetailView
+		} else {
+			returnMode = QuestListView
+		}
+	case JourneyEditFormView:
+		form = m.journeyForm
+		returnMode = QuestListView
+	case HabitEditFormView:
+		form = m.habitForm
+		returnMode = QuestListView
+	case EventEditFormView:
+		form = m.eventForm
+		returnMode = QuestListView
+		m.currentSection = "calendar"
 	}
 
 	if form == nil {
@@ -338,6 +383,14 @@ func (m Model) handleFormUpdate(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case HabitFormView:
 			m.habitForm = f
 		case EventFormView:
+			m.eventForm = f
+		case QuestEditFormView:
+			m.questForm = f
+		case JourneyEditFormView:
+			m.journeyForm = f
+		case HabitEditFormView:
+			m.habitForm = f
+		case EventEditFormView:
 			m.eventForm = f
 		}
 

@@ -364,6 +364,74 @@ func (m Model) confirmDeleteEvent() (Model, tea.Cmd) {
 	return m, clearMessageAfter(1 * time.Second)
 }
 
+func (m Model) editQuest(quest models.Quest) (Model, tea.Cmd) {
+	m.editingQuest = &quest
+	m.questFormData = &QuestForm{
+		Title:      quest.Title,
+		Note:       quest.Note,
+		Difficulty: quest.Difficulty,
+		JourneyID:  quest.JourneyID,
+	}
+	m.questForm = BuildQuestForm(m.questFormData, m.data.Journeys)
+	m.mode = QuestEditFormView
+	return m, m.questForm.Init()
+}
+
+func (m Model) editHabit(habit models.Habit) (Model, tea.Cmd) {
+	m.editingHabit = &habit
+	m.habitFormData = &HabitForm{
+		Name:        habit.Name,
+		CycleType:   habit.CycleType,
+		CycleConfig: habit.CycleConfig,
+	}
+	m.habitForm = BuildHabitForm(m.habitFormData)
+	m.mode = HabitEditFormView
+	return m, m.habitForm.Init()
+}
+
+func (m Model) editJourney(journey models.Journey) (Model, tea.Cmd) {
+	m.editingJourney = &journey
+	m.journeyFormData = &JourneyForm{
+		Name: journey.Name,
+	}
+	m.journeyForm = BuildJourneyForm(m.journeyFormData)
+	m.mode = JourneyEditFormView
+	return m, m.journeyForm.Init()
+}
+
+func (m Model) editEvent(event *models.Event) (Model, tea.Cmd) {
+	m.editingEvent = event
+
+	timeStr := ""
+	if event.Time != nil {
+		timeStr = *event.Time
+	}
+	endTimeStr := ""
+	if event.EndTime != nil {
+		endTimeStr = *event.EndTime
+	}
+	locationStr := ""
+	if event.Location != nil {
+		locationStr = *event.Location
+	}
+	descriptionStr := ""
+	if event.Description != nil {
+		descriptionStr = *event.Description
+	}
+
+	m.eventFormData = &EventForm{
+		Title:       event.Title,
+		Date:        event.Date.Format("2006-01-02"),
+		Time:        timeStr,
+		EndTime:     endTimeStr,
+		Location:    locationStr,
+		Description: descriptionStr,
+	}
+	m.eventForm = BuildEventForm(m.eventFormData)
+	m.mode = EventEditFormView
+	return m, m.eventForm.Init()
+}
+
 func (m Model) handleFormCompletion() (tea.Model, tea.Cmd) {
 	var returnMode ViewMode = QuestListView
 	var message string
@@ -420,6 +488,7 @@ func (m Model) handleFormCompletion() (tea.Model, tea.Cmd) {
 		}
 
 		message = fmt.Sprintf("✓ Journey created: %s", journey.Name)
+		m.currentSection = "journeys"
 
 		if m.selectedJourney != nil {
 			returnMode = JourneyDetailView
@@ -488,6 +557,159 @@ func (m Model) handleFormCompletion() (tea.Model, tea.Cmd) {
 
 		message = fmt.Sprintf("✓ Event created: %s", event.Title)
 
+		m.currentSection = "calendar"
+		returnMode = QuestListView
+
+	case QuestEditFormView:
+		if m.editingQuest == nil {
+			message = "No quest being edited"
+			m.mode = QuestListView
+			m.message = message
+			return m, nil
+		}
+
+		if m.questFormData.Title == "" {
+			message = "Quest title cannot be empty"
+			m.mode = QuestListView
+			m.message = message
+			return m, nil
+		}
+
+		quest, err := m.storage.GetAPIClient().UpdateQuest(m.editingQuest.ID, api.UpdateQuestRequest{
+			Title:      &m.questFormData.Title,
+			Note:       &m.questFormData.Note,
+			Difficulty: &m.questFormData.Difficulty,
+		})
+
+		if err != nil {
+			message = fmt.Sprintf("Failed to update quest: %v", err)
+			m.mode = QuestListView
+			m.message = message
+			m.editingQuest = nil
+			return m, nil
+		}
+
+		message = fmt.Sprintf("✓ Quest updated: %s", quest.Title)
+		m.editingQuest = nil
+
+		if m.selectedJourney != nil {
+			returnMode = JourneyDetailView
+		}
+
+	case HabitEditFormView:
+		if m.editingHabit == nil {
+			message = "No habit being edited"
+			m.mode = QuestListView
+			m.message = message
+			return m, nil
+		}
+
+		if m.habitFormData.Name == "" {
+			message = "Habit name cannot be empty"
+			m.mode = QuestListView
+			m.message = message
+			return m, nil
+		}
+
+		habit, err := m.storage.GetAPIClient().UpdateHabit(m.editingHabit.ID, api.UpdateHabitRequest{
+			Name:        &m.habitFormData.Name,
+			CycleType:   &m.habitFormData.CycleType,
+			CycleConfig: m.habitFormData.CycleConfig,
+		})
+
+		if err != nil {
+			message = fmt.Sprintf("Failed to update habit: %v", err)
+			m.mode = QuestListView
+			m.message = message
+			m.editingHabit = nil
+			return m, nil
+		}
+
+		message = fmt.Sprintf("✓ Habit updated: %s", habit.Name)
+		m.editingHabit = nil
+
+	case JourneyEditFormView:
+		if m.editingJourney == nil {
+			message = "No journey being edited"
+			m.mode = QuestListView
+			m.message = message
+			return m, nil
+		}
+
+		if m.journeyFormData.Name == "" {
+			message = "Journey name cannot be empty"
+			m.mode = QuestListView
+			m.message = message
+			return m, nil
+		}
+
+		journey, err := m.storage.GetAPIClient().UpdateJourney(m.editingJourney.ID, api.UpdateJourneyRequest{
+			Name: &m.journeyFormData.Name,
+		})
+
+		if err != nil {
+			message = fmt.Sprintf("Failed to update journey: %v", err)
+			m.mode = QuestListView
+			m.message = message
+			m.editingJourney = nil
+			return m, nil
+		}
+
+		message = fmt.Sprintf("✓ Journey updated: %s", journey.Name)
+		m.currentSection = "journeys"
+		m.editingJourney = nil
+
+	case EventEditFormView:
+		if m.editingEvent == nil {
+			message = "No event being edited"
+			m.mode = QuestListView
+			m.currentSection = "calendar"
+			m.message = message
+			return m, nil
+		}
+
+		if m.eventFormData.Title == "" {
+			message = "Event title cannot be empty"
+			m.mode = QuestListView
+			m.currentSection = "calendar"
+			m.message = message
+			return m, nil
+		}
+
+		var timePtr, endTimePtr, locationPtr, descriptionPtr *string
+		if m.eventFormData.Time != "" {
+			timePtr = &m.eventFormData.Time
+		}
+		if m.eventFormData.EndTime != "" {
+			endTimePtr = &m.eventFormData.EndTime
+		}
+		if m.eventFormData.Location != "" {
+			locationPtr = &m.eventFormData.Location
+		}
+		if m.eventFormData.Description != "" {
+			descriptionPtr = &m.eventFormData.Description
+		}
+
+		event, err := m.storage.GetAPIClient().UpdateEvent(m.editingEvent.ID, api.UpdateEventRequest{
+			Title:       &m.eventFormData.Title,
+			Date:        &m.eventFormData.Date,
+			Time:        timePtr,
+			EndTime:     endTimePtr,
+			Location:    locationPtr,
+			Description: descriptionPtr,
+		})
+
+		if err != nil {
+			message = fmt.Sprintf("Failed to update event: %v", err)
+			m.mode = QuestListView
+			m.currentSection = "calendar"
+			m.message = message
+			m.editingEvent = nil
+			return m, nil
+		}
+
+		message = fmt.Sprintf("✓ Event updated: %s", event.Title)
+		m.editingEvent = nil
 		m.currentSection = "calendar"
 		returnMode = QuestListView
 	}

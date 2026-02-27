@@ -34,6 +34,14 @@ func (m Model) View() string {
 		return m.renderFormView(m.habitForm)
 	case EventFormView:
 		return m.renderFormView(m.eventForm)
+	case QuestEditFormView:
+		return m.renderFormView(m.questForm)
+	case JourneyEditFormView:
+		return m.renderFormView(m.journeyForm)
+	case HabitEditFormView:
+		return m.renderFormView(m.habitForm)
+	case EventEditFormView:
+		return m.renderFormView(m.eventForm)
 	}
 
 	return ""
