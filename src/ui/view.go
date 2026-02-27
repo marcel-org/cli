@@ -65,7 +65,7 @@ func (m Model) renderQuestListView() string {
 
 	header := HeaderStyle.Width(m.width).Render(headerText)
 
-	statusBar := ""
+	statusBars := []string{}
 	if m.message != "" {
 		var msgStyle lipgloss.Style
 		if strings.Contains(m.message, "✓") {
@@ -75,20 +75,34 @@ func (m Model) renderQuestListView() string {
 		} else {
 			msgStyle = MutedStyle
 		}
-		statusBar = "\n" + StatusBarStyle.Width(m.width).Render(msgStyle.Render(m.message))
+		statusBars = append(statusBars, StatusBarStyle.Width(m.width).Render(msgStyle.Render(m.message)))
 	}
 
 	syncBar := m.renderSyncIndicator()
 	if syncBar != "" {
-		statusBar = statusBar + "\n" + syncBar
+		statusBars = append(statusBars, syncBar)
 	}
 
-	return lipgloss.JoinVertical(
+	topSection := lipgloss.JoinVertical(
 		lipgloss.Left,
 		header,
 		tabs,
 		content,
-		statusBar,
+	)
+
+	if len(statusBars) == 0 {
+		return topSection
+	}
+
+	availableHeight := m.height - len(statusBars)
+	topPadded := lipgloss.NewStyle().Height(availableHeight).Render(topSection)
+
+	bottomSection := lipgloss.JoinVertical(lipgloss.Left, statusBars...)
+
+	return lipgloss.JoinVertical(
+		lipgloss.Left,
+		topPadded,
+		bottomSection,
 	)
 }
 
@@ -317,7 +331,7 @@ func (m Model) renderJourneyDetailView() string {
 
 	content := m.journeyQuestList.View()
 
-	statusBar := ""
+	statusBars := []string{}
 	if m.message != "" {
 		var msgStyle lipgloss.Style
 		if strings.Contains(m.message, "✓") {
@@ -327,14 +341,28 @@ func (m Model) renderJourneyDetailView() string {
 		} else {
 			msgStyle = MutedStyle
 		}
-		statusBar = "\n" + StatusBarStyle.Width(m.width).Render(msgStyle.Render(m.message))
+		statusBars = append(statusBars, StatusBarStyle.Width(m.width).Render(msgStyle.Render(m.message)))
 	}
 
-	return lipgloss.JoinVertical(
+	topSection := lipgloss.JoinVertical(
 		lipgloss.Left,
 		header,
 		content,
-		statusBar,
+	)
+
+	if len(statusBars) == 0 {
+		return topSection
+	}
+
+	availableHeight := m.height - len(statusBars)
+	topPadded := lipgloss.NewStyle().Height(availableHeight).Render(topSection)
+
+	bottomSection := lipgloss.JoinVertical(lipgloss.Left, statusBars...)
+
+	return lipgloss.JoinVertical(
+		lipgloss.Left,
+		topPadded,
+		bottomSection,
 	)
 }
 
