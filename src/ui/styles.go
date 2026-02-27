@@ -7,14 +7,19 @@ import (
 )
 
 var (
-	brandOrange = lipgloss.Color("#FF9600")
-	white       = lipgloss.Color("#FFFFFF")
-	gray        = lipgloss.Color("#666666")
-	lightGray   = lipgloss.Color("#888888")
-	darkGray    = lipgloss.Color("#333333")
-	green       = lipgloss.Color("#34C759")
-	red         = lipgloss.Color("#FF3B30")
-	background  = lipgloss.Color("#1a1a1a")
+	brandOrange    = lipgloss.Color("#FF9600")
+	white          = lipgloss.Color("#FFFFFF")
+	gray           = lipgloss.Color("#666666")
+	lightGray      = lipgloss.Color("#888888")
+	darkGray       = lipgloss.Color("#333333")
+	green          = lipgloss.Color("#34C759")
+	red            = lipgloss.Color("#FF3B30")
+	background     = lipgloss.Color("#1a1a1a")
+	difficultyEasy      = lipgloss.Color("#10b981")
+	difficultyMedium    = lipgloss.Color("#3b82f6")
+	difficultyHard      = lipgloss.Color("#a855f7")
+	difficultyEpic      = lipgloss.Color("#ef4444")
+	difficultyLegendary = lipgloss.Color("#f59e0b")
 )
 
 var (

@@ -93,8 +93,22 @@ func (d questDelegate) Render(w io.Writer, m list.Model, index int, listItem lis
 		if isSelected {
 			str = SelectedItemStyle.Render(titleText) + rewardStyled
 		} else {
+			difficultyColor := white
+			switch i.quest.Difficulty {
+			case "easy":
+				difficultyColor = difficultyEasy
+			case "medium":
+				difficultyColor = difficultyMedium
+			case "hard":
+				difficultyColor = difficultyHard
+			case "epic":
+				difficultyColor = difficultyEpic
+			case "legendary":
+				difficultyColor = difficultyLegendary
+			}
+
 			incompleteStyle := lipgloss.NewStyle().
-				Foreground(brandOrange).
+				Foreground(difficultyColor).
 				Bold(true)
 			str = incompleteStyle.Render(titleText) + rewardStyled
 		}
