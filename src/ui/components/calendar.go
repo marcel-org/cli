@@ -242,7 +242,7 @@ func (c *Calendar) renderMonthCell(date time.Time) string {
 	if c.isSameDate(date, c.selectedDate) {
 		style = style.Background(lipgloss.Color("#45475a")).Foreground(lipgloss.Color("#fab387")).Bold(true)
 	} else if c.isToday(date) {
-		style = style.Foreground(lipgloss.Color("#fab387")).Bold(true)
+		style = style.Background(lipgloss.Color("4")).Foreground(lipgloss.Color("#fab387")).Bold(true)
 	} else if date.Month() != c.currentDate.Month() {
 		style = style.Foreground(lipgloss.Color("#45475a"))
 	}
