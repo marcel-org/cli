@@ -39,7 +39,7 @@ func New() (*Storage, error) {
 }
 
 func (s *Storage) Load() (*models.AppData, error) {
-	return s.LoadQuestsOnly()
+	return s.LoadAll()
 }
 
 func (s *Storage) Save(data *models.AppData) error {
