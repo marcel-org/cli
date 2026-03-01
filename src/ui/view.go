@@ -2,6 +2,7 @@ package ui
 
 import (
 	"fmt"
+	"marcel-cli/ui/colors"
 	"strings"
 
 	"github.com/charmbracelet/huh"
@@ -115,20 +116,20 @@ func (m Model) renderQuestListView() string {
 }
 
 func renderTabs(currentSection string, width int) string {
-	questStyle := lipgloss.NewStyle().Foreground(lightGray).Padding(0, 2)
-	habitStyle := lipgloss.NewStyle().Foreground(lightGray).Padding(0, 2)
-	journeyStyle := lipgloss.NewStyle().Foreground(lightGray).Padding(0, 2)
-	calendarStyle := lipgloss.NewStyle().Foreground(lightGray).Padding(0, 2)
+	questStyle := lipgloss.NewStyle().Foreground(colors.SecondaryText).Padding(0, 2)
+	habitStyle := lipgloss.NewStyle().Foreground(colors.SecondaryText).Padding(0, 2)
+	journeyStyle := lipgloss.NewStyle().Foreground(colors.SecondaryText).Padding(0, 2)
+	calendarStyle := lipgloss.NewStyle().Foreground(colors.SecondaryText).Padding(0, 2)
 
 	switch currentSection {
 	case "quests":
-		questStyle = questStyle.Foreground(brandOrange).Bold(true).Background(darkGray)
+		questStyle = questStyle.Foreground(colors.BrandOrange).Bold(true).Background(colors.BackgroundSecondary)
 	case "habits":
-		habitStyle = habitStyle.Foreground(brandOrange).Bold(true).Background(darkGray)
+		habitStyle = habitStyle.Foreground(colors.BrandOrange).Bold(true).Background(colors.BackgroundSecondary)
 	case "journeys":
-		journeyStyle = journeyStyle.Foreground(brandOrange).Bold(true).Background(darkGray)
+		journeyStyle = journeyStyle.Foreground(colors.BrandOrange).Bold(true).Background(colors.BackgroundSecondary)
 	case "calendar":
-		calendarStyle = calendarStyle.Foreground(brandOrange).Bold(true).Background(darkGray)
+		calendarStyle = calendarStyle.Foreground(colors.BrandOrange).Bold(true).Background(colors.BackgroundSecondary)
 	}
 
 	tabs := lipgloss.JoinHorizontal(
@@ -262,26 +263,26 @@ func (m Model) renderConfirmDeleteView() string {
 	}
 
 	titleStyled := lipgloss.NewStyle().
-		Foreground(red).
+		Foreground(colors.Red).
 		Bold(true).
 		Render(title)
 
 	itemNameStyled := lipgloss.NewStyle().
-		Foreground(white).
+		Foreground(colors.PrimaryText).
 		Render(itemName)
 
 	noStyle := lipgloss.NewStyle().
-		Foreground(white).
+		Foreground(colors.BackgroundPrimary).
 		Padding(0, 2)
 
 	yesStyle := lipgloss.NewStyle().
-		Foreground(white).
+		Foreground(colors.BackgroundPrimary).
 		Padding(0, 2)
 
 	if !m.confirmSelected {
-		noStyle = noStyle.Background(brandOrange).Bold(true)
+		noStyle = noStyle.Background(colors.BrandOrange).Bold(true)
 	} else {
-		yesStyle = yesStyle.Background(red).Bold(true)
+		yesStyle = yesStyle.Background(colors.Red).Bold(true)
 	}
 
 	buttons := lipgloss.JoinHorizontal(

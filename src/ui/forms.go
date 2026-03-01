@@ -3,6 +3,7 @@ package ui
 import (
 	"fmt"
 	"marcel-cli/models"
+	"marcel-cli/ui/colors"
 
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/huh"
@@ -45,11 +46,11 @@ func BuildQuestForm(formData *QuestForm, journeys []models.Journey) *huh.Form {
 	}
 
 	theme := huh.ThemeCharm()
-	theme.Focused.Base = lipgloss.NewStyle().BorderForeground(brandOrange)
-	theme.Focused.Title = lipgloss.NewStyle().Foreground(brandOrange).Bold(true)
-	theme.Focused.TextInput.Cursor = lipgloss.NewStyle().Foreground(brandOrange)
-	theme.Focused.SelectSelector = lipgloss.NewStyle().Foreground(brandOrange).SetString(">")
-	theme.Focused.SelectedOption = lipgloss.NewStyle().Foreground(brandOrange)
+	theme.Focused.Base = lipgloss.NewStyle().BorderForeground(colors.BrandOrange)
+	theme.Focused.Title = lipgloss.NewStyle().Foreground(colors.BrandOrange).Bold(true)
+	theme.Focused.TextInput.Cursor = lipgloss.NewStyle().Foreground(colors.BrandOrange)
+	theme.Focused.SelectSelector = lipgloss.NewStyle().Foreground(colors.BrandOrange).SetString(">")
+	theme.Focused.SelectedOption = lipgloss.NewStyle().Foreground(colors.BrandOrange)
 
 	return huh.NewForm(
 		huh.NewGroup(
@@ -103,11 +104,11 @@ func NewQuestForm(journeys []models.Journey) (*QuestForm, error) {
 	}
 
 	theme := huh.ThemeCharm()
-	theme.Focused.Base = lipgloss.NewStyle().BorderForeground(brandOrange)
-	theme.Focused.Title = lipgloss.NewStyle().Foreground(brandOrange).Bold(true)
-	theme.Focused.TextInput.Cursor = lipgloss.NewStyle().Foreground(brandOrange)
-	theme.Focused.SelectSelector = lipgloss.NewStyle().Foreground(brandOrange).SetString(">")
-	theme.Focused.SelectedOption = lipgloss.NewStyle().Foreground(brandOrange)
+	theme.Focused.Base = lipgloss.NewStyle().BorderForeground(colors.BrandOrange)
+	theme.Focused.Title = lipgloss.NewStyle().Foreground(colors.BrandOrange).Bold(true)
+	theme.Focused.TextInput.Cursor = lipgloss.NewStyle().Foreground(colors.BrandOrange)
+	theme.Focused.SelectSelector = lipgloss.NewStyle().Foreground(colors.BrandOrange).SetString(">")
+	theme.Focused.SelectedOption = lipgloss.NewStyle().Foreground(colors.BrandOrange)
 
 	huhForm := huh.NewForm(
 		huh.NewGroup(
@@ -154,10 +155,10 @@ func NewConfirmDialog(title, description string) (*ConfirmDialog, error) {
 	dialog := &ConfirmDialog{}
 
 	theme := huh.ThemeCharm()
-	theme.Focused.Base = lipgloss.NewStyle().BorderForeground(red)
-	theme.Focused.Title = lipgloss.NewStyle().Foreground(red).Bold(true)
-	theme.Focused.SelectSelector = lipgloss.NewStyle().Foreground(red).SetString(">")
-	theme.Focused.SelectedOption = lipgloss.NewStyle().Foreground(red)
+	theme.Focused.Base = lipgloss.NewStyle().BorderForeground(colors.Red)
+	theme.Focused.Title = lipgloss.NewStyle().Foreground(colors.Red).Bold(true)
+	theme.Focused.SelectSelector = lipgloss.NewStyle().Foreground(colors.Red).SetString(">")
+	theme.Focused.SelectedOption = lipgloss.NewStyle().Foreground(colors.Red)
 
 	huhForm := huh.NewForm(
 		huh.NewGroup(
@@ -196,11 +197,11 @@ func BuildHabitForm(formData *HabitForm) *huh.Form {
 	}
 
 	theme := huh.ThemeCharm()
-	theme.Focused.Base = lipgloss.NewStyle().BorderForeground(brandOrange)
-	theme.Focused.Title = lipgloss.NewStyle().Foreground(brandOrange).Bold(true)
-	theme.Focused.TextInput.Cursor = lipgloss.NewStyle().Foreground(brandOrange)
-	theme.Focused.SelectSelector = lipgloss.NewStyle().Foreground(brandOrange).SetString(">")
-	theme.Focused.SelectedOption = lipgloss.NewStyle().Foreground(brandOrange)
+	theme.Focused.Base = lipgloss.NewStyle().BorderForeground(colors.BrandOrange)
+	theme.Focused.Title = lipgloss.NewStyle().Foreground(colors.BrandOrange).Bold(true)
+	theme.Focused.TextInput.Cursor = lipgloss.NewStyle().Foreground(colors.BrandOrange)
+	theme.Focused.SelectSelector = lipgloss.NewStyle().Foreground(colors.BrandOrange).SetString(">")
+	theme.Focused.SelectedOption = lipgloss.NewStyle().Foreground(colors.BrandOrange)
 
 	return huh.NewForm(
 		huh.NewGroup(
@@ -237,11 +238,11 @@ func NewHabitForm() (*HabitForm, error) {
 	}
 
 	theme := huh.ThemeCharm()
-	theme.Focused.Base = lipgloss.NewStyle().BorderForeground(brandOrange)
-	theme.Focused.Title = lipgloss.NewStyle().Foreground(brandOrange).Bold(true)
-	theme.Focused.TextInput.Cursor = lipgloss.NewStyle().Foreground(brandOrange)
-	theme.Focused.SelectSelector = lipgloss.NewStyle().Foreground(brandOrange).SetString(">")
-	theme.Focused.SelectedOption = lipgloss.NewStyle().Foreground(brandOrange)
+	theme.Focused.Base = lipgloss.NewStyle().BorderForeground(colors.BrandOrange)
+	theme.Focused.Title = lipgloss.NewStyle().Foreground(colors.BrandOrange).Bold(true)
+	theme.Focused.TextInput.Cursor = lipgloss.NewStyle().Foreground(colors.BrandOrange)
+	theme.Focused.SelectSelector = lipgloss.NewStyle().Foreground(colors.BrandOrange).SetString(">")
+	theme.Focused.SelectedOption = lipgloss.NewStyle().Foreground(colors.BrandOrange)
 
 	huhForm := huh.NewForm(
 		huh.NewGroup(
@@ -281,9 +282,9 @@ type JourneyForm struct {
 
 func BuildJourneyForm(formData *JourneyForm) *huh.Form {
 	theme := huh.ThemeCharm()
-	theme.Focused.Base = lipgloss.NewStyle().BorderForeground(brandOrange)
-	theme.Focused.Title = lipgloss.NewStyle().Foreground(brandOrange).Bold(true)
-	theme.Focused.TextInput.Cursor = lipgloss.NewStyle().Foreground(brandOrange)
+	theme.Focused.Base = lipgloss.NewStyle().BorderForeground(colors.BrandOrange)
+	theme.Focused.Title = lipgloss.NewStyle().Foreground(colors.BrandOrange).Bold(true)
+	theme.Focused.TextInput.Cursor = lipgloss.NewStyle().Foreground(colors.BrandOrange)
 
 	return huh.NewForm(
 		huh.NewGroup(
@@ -309,9 +310,9 @@ func NewJourneyForm() (*JourneyForm, error) {
 	form := &JourneyForm{}
 
 	theme := huh.ThemeCharm()
-	theme.Focused.Base = lipgloss.NewStyle().BorderForeground(brandOrange)
-	theme.Focused.Title = lipgloss.NewStyle().Foreground(brandOrange).Bold(true)
-	theme.Focused.TextInput.Cursor = lipgloss.NewStyle().Foreground(brandOrange)
+	theme.Focused.Base = lipgloss.NewStyle().BorderForeground(colors.BrandOrange)
+	theme.Focused.Title = lipgloss.NewStyle().Foreground(colors.BrandOrange).Bold(true)
+	theme.Focused.TextInput.Cursor = lipgloss.NewStyle().Foreground(colors.BrandOrange)
 
 	huhForm := huh.NewForm(
 		huh.NewGroup(
@@ -352,11 +353,11 @@ func NewQuestFormSimple() (*QuestForm, error) {
 	}
 
 	theme := huh.ThemeCharm()
-	theme.Focused.Base = lipgloss.NewStyle().BorderForeground(brandOrange)
-	theme.Focused.Title = lipgloss.NewStyle().Foreground(brandOrange).Bold(true)
-	theme.Focused.TextInput.Cursor = lipgloss.NewStyle().Foreground(brandOrange)
-	theme.Focused.SelectSelector = lipgloss.NewStyle().Foreground(brandOrange).SetString(">")
-	theme.Focused.SelectedOption = lipgloss.NewStyle().Foreground(brandOrange)
+	theme.Focused.Base = lipgloss.NewStyle().BorderForeground(colors.BrandOrange)
+	theme.Focused.Title = lipgloss.NewStyle().Foreground(colors.BrandOrange).Bold(true)
+	theme.Focused.TextInput.Cursor = lipgloss.NewStyle().Foreground(colors.BrandOrange)
+	theme.Focused.SelectSelector = lipgloss.NewStyle().Foreground(colors.BrandOrange).SetString(">")
+	theme.Focused.SelectedOption = lipgloss.NewStyle().Foreground(colors.BrandOrange)
 
 	huhForm := huh.NewForm(
 		huh.NewGroup(
@@ -406,9 +407,9 @@ type EventForm struct {
 
 func BuildEventForm(formData *EventForm) *huh.Form {
 	theme := huh.ThemeCharm()
-	theme.Focused.Base = lipgloss.NewStyle().BorderForeground(brandOrange)
-	theme.Focused.Title = lipgloss.NewStyle().Foreground(brandOrange).Bold(true)
-	theme.Focused.TextInput.Cursor = lipgloss.NewStyle().Foreground(brandOrange)
+	theme.Focused.Base = lipgloss.NewStyle().BorderForeground(colors.BrandOrange)
+	theme.Focused.Title = lipgloss.NewStyle().Foreground(colors.BrandOrange).Bold(true)
+	theme.Focused.TextInput.Cursor = lipgloss.NewStyle().Foreground(colors.BrandOrange)
 
 	return huh.NewForm(
 		huh.NewGroup(

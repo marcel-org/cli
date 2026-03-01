@@ -2,92 +2,77 @@ package ui
 
 import (
 	"fmt"
+	"marcel-cli/ui/colors"
 
 	"github.com/charmbracelet/lipgloss"
 )
 
 var (
-	brandOrange         = lipgloss.Color("#FF9600")
-	white               = lipgloss.Color("#FFFFFF")
-	gray                = lipgloss.Color("#666666")
-	lightGray           = lipgloss.Color("#888888")
-	darkGray            = lipgloss.Color("#333333")
-	green               = lipgloss.Color("#34C759")
-	red                 = lipgloss.Color("#FF3B30")
-	background          = lipgloss.Color("#1a1a1a")
-	difficultyEasy      = lipgloss.Color("#10b981")
-	difficultyMedium    = lipgloss.Color("#3b82f6")
-	difficultyHard      = lipgloss.Color("#a855f7")
-	difficultyEpic      = lipgloss.Color("#ef4444")
-	difficultyLegendary = lipgloss.Color("#f59e0b")
-)
-
-var (
 	BaseStyle = lipgloss.NewStyle().
-			Foreground(white).
-			Background(background)
+			Foreground(colors.PrimaryText).
+			Background(colors.BackgroundPrimary)
 
 	TitleStyle = lipgloss.NewStyle().
 			Bold(true).
-			Foreground(brandOrange).
+			Foreground(colors.BrandOrange).
 			MarginBottom(1).
 			Padding(0, 2)
 
 	HeaderStyle = lipgloss.NewStyle().
 			Bold(true).
-			Foreground(brandOrange).
-			Background(darkGray).
+			Foreground(colors.BrandOrange).
+			Background(colors.BackgroundSecondary).
 			Padding(0, 1).
 			MarginBottom(1)
 
 	SelectedItemStyle = lipgloss.NewStyle().
-				Foreground(background).
-				Background(brandOrange).
+				Foreground(colors.BackgroundPrimary).
+				Background(colors.BrandOrange).
 				Bold(true)
 
 	NormalItemStyle = lipgloss.NewStyle().
-			Foreground(white)
+			Foreground(colors.PrimaryText)
 
 	CompletedItemStyle = lipgloss.NewStyle().
-				Foreground(gray).
+				Foreground(colors.MutedText).
 				Strikethrough(true).
 				Padding(0, 1)
 
 	MutedStyle = lipgloss.NewStyle().
-			Foreground(lightGray)
+			Foreground(colors.SecondaryText)
 
 	ErrorStyle = lipgloss.NewStyle().
-			Foreground(red).
+			Foreground(colors.Red).
 			Bold(true)
 
 	SuccessStyle = lipgloss.NewStyle().
-			Foreground(green).
+			Foreground(colors.Green).
 			Bold(true)
 
 	BoxStyle = lipgloss.NewStyle().
 			Padding(1, 2)
 
 	HelpStyle = lipgloss.NewStyle().
-			Foreground(lightGray).
+			Foreground(colors.SecondaryText).
 			MarginTop(1)
 
 	StatusBarStyle = lipgloss.NewStyle().
-			Foreground(white).
-			Background(darkGray).
+			Foreground(colors.PrimaryText).
+			Background(colors.BackgroundSecondary).
 			Padding(0, 1)
 
 	BadgeStyle = lipgloss.NewStyle().
-			Foreground(background).
-			Background(brandOrange).
+			Foreground(colors.BackgroundPrimary).
+			Background(colors.BrandOrange).
 			Bold(true).
 			Padding(0, 1).
 			MarginRight(1)
 
 	SpinnerStyle = lipgloss.NewStyle().
-			Foreground(brandOrange)
+			Foreground(colors.BrandOrange)
 
 	DividerStyle = lipgloss.NewStyle().
-			Foreground(darkGray).
+			Foreground(colors.BorderColor).
 			Bold(true)
 )
 

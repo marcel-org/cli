@@ -3,6 +3,7 @@ package components
 import (
 	"fmt"
 	"marcel-cli/models"
+	"marcel-cli/ui/colors"
 	"strings"
 	"time"
 
@@ -173,7 +174,7 @@ func (c *Calendar) View() string {
 		weekdays = weekdaysSunday
 	}
 
-	headerStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("#6c7086"))
+	headerStyle := lipgloss.NewStyle().Foreground(colors.SecondaryText)
 	for _, day := range weekdays {
 		sb.WriteString(headerStyle.Render(fmt.Sprintf(" %-6s ", day)))
 	}
@@ -221,7 +222,7 @@ func (c *Calendar) renderHeader() string {
 
 	headerStyle := lipgloss.NewStyle().
 		Bold(true).
-		Foreground(lipgloss.Color("#fab387"))
+		Foreground(colors.AccentPeach)
 
 	return headerStyle.Render(title)
 }
@@ -240,11 +241,11 @@ func (c *Calendar) renderMonthCell(date time.Time) string {
 	style := lipgloss.NewStyle()
 
 	if c.isSameDate(date, c.selectedDate) {
-		style = style.Background(lipgloss.Color("#FF9600")).Foreground(lipgloss.Color("#1a1a1a")).Bold(true)
+		style = style.Background(colors.BrandOrange).Foreground(colors.BackgroundPrimary).Bold(true)
 	} else if c.isToday(date) {
-		style = style.Background(lipgloss.Color("4")).Foreground(lipgloss.Color("#fab387")).Bold(true)
+		style = style.Background(colors.AccentBlue).Foreground(colors.BackgroundPrimary).Bold(true)
 	} else if date.Month() != c.currentDate.Month() {
-		style = style.Foreground(lipgloss.Color("#888888"))
+		style = style.Foreground(colors.MutedText)
 	}
 
 	return style.Render(cellContent)
@@ -258,21 +259,21 @@ func (c *Calendar) renderSelectedDateEvents() string {
 		dateStr += " (Today)"
 	}
 
-	headerStyle := lipgloss.NewStyle().Bold(true).Foreground(lipgloss.Color("#cdd6f4"))
+	headerStyle := lipgloss.NewStyle().Bold(true).Foreground(colors.PrimaryText)
 	sb.WriteString(headerStyle.Render(dateStr))
 	sb.WriteString("\n\n")
 
 	events := c.getEventsForDate(c.selectedDate)
 
 	if len(events) == 0 {
-		mutedStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("#6c7086")).Italic(true)
+		mutedStyle := lipgloss.NewStyle().Foreground(colors.SecondaryText).Italic(true)
 		sb.WriteString(mutedStyle.Render("No events scheduled"))
 	} else {
 		for i, event := range events {
-			eventStyle := lipgloss.NewStyle().Padding(0, 1)
+			eventStyle := lipgloss.NewStyle().Padding(0, 1).Foreground(colors.PrimaryText)
 
 			if c.focusEventList && i == c.selectedEvent {
-				eventStyle = eventStyle.Background(lipgloss.Color("#fab387")).Foreground(lipgloss.Color("#1e1e2e"))
+				eventStyle = eventStyle.Background(colors.AccentPeach).Foreground(colors.BackgroundPrimary)
 			}
 
 			timeStr := ""

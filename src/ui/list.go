@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"marcel-cli/models"
+	"marcel-cli/ui/colors"
 	"time"
 
 	"github.com/charmbracelet/bubbles/list"
@@ -68,17 +69,18 @@ func (d questDelegate) Render(w io.Writer, m list.Model, index int, listItem lis
 	var str string
 	if i.quest.Done {
 		title := lipgloss.NewStyle().
-			Foreground(gray).
+			Foreground(colors.MutedText).
 			Strikethrough(true).
 			Render(fmt.Sprintf("%s %s", checkbox, i.quest.Title))
 
 		meta := lipgloss.NewStyle().
-			Foreground(gray).
+			Foreground(colors.MutedText).
 			Render(fmt.Sprintf(" %s%s", journey, reward))
 
 		if isSelected {
 			str = lipgloss.NewStyle().
-				Background(brandOrange).
+				Background(colors.BrandOrange).
+				Foreground(colors.BackgroundPrimary).
 				Render(title + meta)
 		} else {
 			str = title + meta
@@ -87,7 +89,7 @@ func (d questDelegate) Render(w io.Writer, m list.Model, index int, listItem lis
 		journeyStyled := ""
 		if journey != "" && journey != "My Quests" {
 			journeyStyled = lipgloss.NewStyle().
-				Foreground(gray).
+				Foreground(colors.SecondaryText).
 				Render(fmt.Sprintf(" %s", journey))
 		}
 
@@ -96,22 +98,22 @@ func (d questDelegate) Render(w io.Writer, m list.Model, index int, listItem lis
 		if isSelected {
 			str = SelectedItemStyle.Render(titleText) + journeyStyled
 		} else {
-			difficultyColor := "15"
+			difficultyColor := colors.PrimaryText
 			switch i.quest.Difficulty {
 			case "easy":
-				difficultyColor = "2"
+				difficultyColor = colors.DifficultyEasy
 			case "medium":
-				difficultyColor = "4"
+				difficultyColor = colors.DifficultyMedium
 			case "hard":
-				difficultyColor = "5"
+				difficultyColor = colors.DifficultyHard
 			case "epic":
-				difficultyColor = "1"
+				difficultyColor = colors.DifficultyEpic
 			case "legendary":
-				difficultyColor = "3"
+				difficultyColor = colors.DifficultyLegendary
 			}
 
 			incompleteStyle := lipgloss.NewStyle().
-				Foreground(lipgloss.Color(difficultyColor)).
+				Foreground(difficultyColor).
 				Bold(true)
 			str = incompleteStyle.Render(titleText) + journeyStyled
 		}
@@ -148,8 +150,8 @@ func newQuestList(data *models.AppData, width, height int) list.Model {
 	l.SetShowStatusBar(false)
 	l.SetShowHelp(false)
 	l.SetFilteringEnabled(true)
-	l.Styles.FilterPrompt = lipgloss.NewStyle().Foreground(brandOrange)
-	l.Styles.FilterCursor = lipgloss.NewStyle().Foreground(brandOrange)
+	l.Styles.FilterPrompt = lipgloss.NewStyle().Foreground(colors.BrandOrange)
+	l.Styles.FilterCursor = lipgloss.NewStyle().Foreground(colors.BrandOrange)
 
 	return l
 }
@@ -213,19 +215,20 @@ func (d habitDelegate) Render(w io.Writer, m list.Model, index int, listItem lis
 	}
 
 	streak := lipgloss.NewStyle().
-		Foreground(gray).
+		Foreground(colors.SecondaryText).
 		Render(fmt.Sprintf(" 🔥 %d • %s", i.habit.CurrentStreak, i.habit.CycleDescription))
 
 	var str string
 	if completedToday {
 		title := lipgloss.NewStyle().
-			Foreground(gray).
+			Foreground(colors.MutedText).
 			Strikethrough(true).
 			Render(fmt.Sprintf("%s %s", checkbox, i.habit.Name))
 
 		if isSelected {
 			str = lipgloss.NewStyle().
-				Background(brandOrange).
+				Background(colors.BrandOrange).
+				Foreground(colors.BackgroundPrimary).
 				Render(title + streak)
 		} else {
 			str = title + streak
@@ -258,8 +261,8 @@ func newHabitList(data *models.AppData, width, height int) list.Model {
 	l.SetShowStatusBar(false)
 	l.SetShowHelp(false)
 	l.SetFilteringEnabled(true)
-	l.Styles.FilterPrompt = lipgloss.NewStyle().Foreground(brandOrange)
-	l.Styles.FilterCursor = lipgloss.NewStyle().Foreground(brandOrange)
+	l.Styles.FilterPrompt = lipgloss.NewStyle().Foreground(colors.BrandOrange)
+	l.Styles.FilterCursor = lipgloss.NewStyle().Foreground(colors.BrandOrange)
 
 	return l
 }
@@ -299,7 +302,7 @@ func (d journeyDelegate) Render(w io.Writer, m list.Model, index int, listItem l
 	isSelected := index == m.Index()
 
 	questCount := lipgloss.NewStyle().
-		Foreground(gray).
+		Foreground(colors.SecondaryText).
 		Render(fmt.Sprintf(" %d quests", len(i.journey.Quests)))
 
 	var str string
@@ -331,8 +334,8 @@ func newJourneyList(data *models.AppData, width, height int) list.Model {
 	l.SetShowStatusBar(false)
 	l.SetShowHelp(false)
 	l.SetFilteringEnabled(true)
-	l.Styles.FilterPrompt = lipgloss.NewStyle().Foreground(brandOrange)
-	l.Styles.FilterCursor = lipgloss.NewStyle().Foreground(brandOrange)
+	l.Styles.FilterPrompt = lipgloss.NewStyle().Foreground(colors.BrandOrange)
+	l.Styles.FilterCursor = lipgloss.NewStyle().Foreground(colors.BrandOrange)
 
 	return l
 }
@@ -363,8 +366,8 @@ func newJourneyQuestList(journey *models.Journey, width, height int) list.Model 
 	l.SetShowStatusBar(false)
 	l.SetShowHelp(false)
 	l.SetFilteringEnabled(true)
-	l.Styles.FilterPrompt = lipgloss.NewStyle().Foreground(brandOrange)
-	l.Styles.FilterCursor = lipgloss.NewStyle().Foreground(brandOrange)
+	l.Styles.FilterPrompt = lipgloss.NewStyle().Foreground(colors.BrandOrange)
+	l.Styles.FilterCursor = lipgloss.NewStyle().Foreground(colors.BrandOrange)
 
 	return l
 }
