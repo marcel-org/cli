@@ -1,6 +1,9 @@
 package colors
 
 import (
+	"os"
+	"strings"
+
 	"github.com/charmbracelet/lipgloss"
 	"github.com/muesli/termenv"
 )
@@ -27,6 +30,16 @@ var (
 )
 
 func detectDarkBackground() bool {
+	if colorMode := os.Getenv("MARCEL_COLOR_MODE"); colorMode != "" {
+		return strings.ToLower(colorMode) == "dark"
+	}
+
+	defer func() {
+		if r := recover(); r != nil {
+			return
+		}
+	}()
+
 	return termenv.HasDarkBackground()
 }
 
