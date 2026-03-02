@@ -31,7 +31,7 @@ var (
 				Bold(true)
 
 	NormalItemStyle = lipgloss.NewStyle().
-			Foreground(colors.PrimaryText)
+			Foreground(lipgloss.NoColor{})
 
 	CompletedItemStyle = lipgloss.NewStyle().
 				Foreground(colors.MutedText).
