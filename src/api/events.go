@@ -37,7 +37,7 @@ type UpdateEventRequest struct {
 }
 
 func (c *Client) GetEvents() ([]models.Event, error) {
-	resp, err := c.doRequest("GET", "/event", nil)
+	resp, err := c.doRequest("GET", "/calendar/event", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +57,7 @@ func (c *Client) GetEvents() ([]models.Event, error) {
 }
 
 func (c *Client) CreateEvent(req CreateEventRequest) (*models.Event, error) {
-	resp, err := c.doRequest("POST", "/event", req)
+	resp, err := c.doRequest("POST", "/calendar/event", req)
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +77,7 @@ func (c *Client) CreateEvent(req CreateEventRequest) (*models.Event, error) {
 }
 
 func (c *Client) UpdateEvent(eventID int, updates UpdateEventRequest) (*models.Event, error) {
-	path := fmt.Sprintf("/event/%d", eventID)
+	path := fmt.Sprintf("/calendar/event/%d", eventID)
 	resp, err := c.doRequest("PUT", path, updates)
 	if err != nil {
 		return nil, err
@@ -98,7 +98,7 @@ func (c *Client) UpdateEvent(eventID int, updates UpdateEventRequest) (*models.E
 }
 
 func (c *Client) DeleteEvent(eventID int) error {
-	path := fmt.Sprintf("/event/%d", eventID)
+	path := fmt.Sprintf("/calendar/event/%d", eventID)
 	resp, err := c.doRequest("DELETE", path, nil)
 	if err != nil {
 		return err

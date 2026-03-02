@@ -92,6 +92,8 @@ func NewJourney(name string) Journey {
 func NewAppData() AppData {
 	return AppData{
 		Journeys:       []Journey{},
+		Habits:         []Habit{},
+		Events:         []Event{},
 		CurrentJourney: 0,
 	}
 }
