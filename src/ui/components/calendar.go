@@ -238,7 +238,7 @@ func (c *Calendar) renderMonthCell(date time.Time) string {
 		cellContent = fmt.Sprintf("  %s    ", dayStr)
 	}
 
-	style := lipgloss.NewStyle()
+	style := lipgloss.NewStyle().Foreground(lipgloss.NoColor{})
 
 	if c.isSameDate(date, c.selectedDate) {
 		style = style.Background(colors.BrandOrange).Foreground(colors.BackgroundPrimary).Bold(true)
