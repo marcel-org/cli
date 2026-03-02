@@ -259,7 +259,7 @@ func (c *Calendar) renderSelectedDateEvents() string {
 		dateStr += " (Today)"
 	}
 
-	headerStyle := lipgloss.NewStyle().Bold(true)
+	headerStyle := lipgloss.NewStyle().Bold(true).Foreground(lipgloss.NoColor{})
 	sb.WriteString(headerStyle.Render(dateStr))
 	sb.WriteString("\n\n")
 
@@ -270,7 +270,7 @@ func (c *Calendar) renderSelectedDateEvents() string {
 		sb.WriteString(mutedStyle.Render("No events scheduled"))
 	} else {
 		for i, event := range events {
-			eventStyle := lipgloss.NewStyle().Padding(0, 1)
+			eventStyle := lipgloss.NewStyle().Padding(0, 1).Foreground(lipgloss.NoColor{})
 
 			if c.focusEventList && i == c.selectedEvent {
 				eventStyle = eventStyle.Background(colors.AccentPeach).Foreground(colors.BackgroundPrimary)

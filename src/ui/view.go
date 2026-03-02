@@ -116,10 +116,10 @@ func (m Model) renderQuestListView() string {
 }
 
 func renderTabs(currentSection string, width int) string {
-	questStyle := lipgloss.NewStyle().Padding(0, 2)
-	habitStyle := lipgloss.NewStyle().Padding(0, 2)
-	journeyStyle := lipgloss.NewStyle().Padding(0, 2)
-	calendarStyle := lipgloss.NewStyle().Padding(0, 2)
+	questStyle := lipgloss.NewStyle().Padding(0, 2).Foreground(lipgloss.NoColor{})
+	habitStyle := lipgloss.NewStyle().Padding(0, 2).Foreground(lipgloss.NoColor{})
+	journeyStyle := lipgloss.NewStyle().Padding(0, 2).Foreground(lipgloss.NoColor{})
+	calendarStyle := lipgloss.NewStyle().Padding(0, 2).Foreground(lipgloss.NoColor{})
 
 	switch currentSection {
 	case "quests":
