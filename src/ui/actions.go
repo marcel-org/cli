@@ -51,18 +51,13 @@ func (m Model) confirmDeleteQuest() (Model, tea.Cmd) {
 		return m, nil
 	}
 
-	err := m.storage.GetAPIClient().DeleteQuest(m.confirmQuest.ID)
-	if err != nil {
-		m.message = fmt.Sprintf("Failed to delete quest: %v", err)
-		m.mode = QuestListView
-		m.confirmQuest = nil
-		return m, nil
-	}
+	questID := m.confirmQuest.ID
 
+	// Optimistically remove quest from UI
 	for i := range m.data.Journeys {
 		newQuests := []models.Quest{}
 		for _, q := range m.data.Journeys[i].Quests {
-			if q.ID != m.confirmQuest.ID {
+			if q.ID != questID {
 				newQuests = append(newQuests, q)
 			}
 		}
@@ -70,11 +65,13 @@ func (m Model) confirmDeleteQuest() (Model, tea.Cmd) {
 	}
 
 	m.questList = newQuestList(m.data, m.width-4, m.height-8)
-	m.message = "Quest deleted successfully"
+	m.message = "Deleting quest..."
 	m.mode = QuestListView
-	m.confirmQuest = nil
 
-	return m, clearMessageAfter(1 * time.Second)
+	// Keep confirmQuest for rollback in case of error
+	m.questDeleteCmd = deleteQuestCmd(m.storage, questID)
+
+	return m, m.questDeleteCmd
 }
 
 func (m Model) confirmDeleteHabit() (Model, tea.Cmd) {
@@ -83,28 +80,25 @@ func (m Model) confirmDeleteHabit() (Model, tea.Cmd) {
 		return m, nil
 	}
 
-	err := m.storage.GetAPIClient().DeleteHabit(m.confirmHabit.ID)
-	if err != nil {
-		m.message = fmt.Sprintf("Failed to delete habit: %v", err)
-		m.mode = QuestListView
-		m.confirmHabit = nil
-		return m, nil
-	}
+	habitID := m.confirmHabit.ID
 
+	// Optimistically remove habit from UI
 	var newHabits []models.Habit
 	for _, h := range m.data.Habits {
-		if h.ID != m.confirmHabit.ID {
+		if h.ID != habitID {
 			newHabits = append(newHabits, h)
 		}
 	}
 	m.data.Habits = newHabits
 
 	m.habitList = newHabitList(m.data, m.width-4, m.height-10)
-	m.message = "Habit deleted successfully"
+	m.message = "Deleting habit..."
 	m.mode = QuestListView
-	m.confirmHabit = nil
 
-	return m, clearMessageAfter(1 * time.Second)
+	// Keep confirmHabit for rollback in case of error
+	m.habitDeleteCmd = deleteHabitCmd(m.storage, habitID)
+
+	return m, m.habitDeleteCmd
 }
 
 func (m Model) confirmDeleteJourney() (Model, tea.Cmd) {
@@ -113,28 +107,25 @@ func (m Model) confirmDeleteJourney() (Model, tea.Cmd) {
 		return m, nil
 	}
 
-	err := m.storage.GetAPIClient().DeleteJourney(m.confirmJourney.ID)
-	if err != nil {
-		m.message = fmt.Sprintf("Failed to delete journey: %v", err)
-		m.mode = QuestListView
-		m.confirmJourney = nil
-		return m, nil
-	}
+	journeyID := m.confirmJourney.ID
 
+	// Optimistically remove journey from UI
 	var newJourneys []models.Journey
 	for _, j := range m.data.Journeys {
-		if j.ID != m.confirmJourney.ID {
+		if j.ID != journeyID {
 			newJourneys = append(newJourneys, j)
 		}
 	}
 	m.data.Journeys = newJourneys
 
 	m.journeyList = newJourneyList(m.data, m.width-4, m.height-10)
-	m.message = "Journey deleted successfully"
+	m.message = "Deleting journey..."
 	m.mode = QuestListView
-	m.confirmJourney = nil
 
-	return m, clearMessageAfter(1 * time.Second)
+	// Keep confirmJourney for rollback in case of error
+	m.journeyDeleteCmd = deleteJourneyCmd(m.storage, journeyID)
+
+	return m, m.journeyDeleteCmd
 }
 
 func (m Model) cancelDelete() Model {
@@ -452,25 +443,79 @@ func (m Model) handleFormCompletion() (tea.Model, tea.Cmd) {
 			journeyID = &m.selectedJourney.ID
 		}
 
-		quest, err := m.storage.GetAPIClient().CreateQuest(
+		tempID := -int(time.Now().UnixNano())
+		optimisticQuest := &models.Quest{
+			ID:         tempID,
+			Title:      m.questFormData.Title,
+			Note:       m.questFormData.Note,
+			Done:       false,
+			Difficulty: m.questFormData.Difficulty,
+			AuthorID:   0,
+			XPReward:   0,
+			GoldReward: 0,
+			JourneyID:  journeyID,
+			Status:     "todo",
+			CreatedAt:  time.Now(),
+			UpdatedAt:  time.Now(),
+		}
+
+		if journeyID != nil {
+			found := false
+			for i := range m.data.Journeys {
+				if m.data.Journeys[i].ID == *journeyID {
+					m.data.Journeys[i].Quests = append(m.data.Journeys[i].Quests, *optimisticQuest)
+					found = true
+					break
+				}
+			}
+			if !found {
+				message = "Journey not found"
+				m.mode = returnMode
+				m.message = message
+				return m, nil
+			}
+		} else {
+			found := false
+			for i := range m.data.Journeys {
+				if m.data.Journeys[i].ID == 0 {
+					m.data.Journeys[i].Quests = append(m.data.Journeys[i].Quests, *optimisticQuest)
+					found = true
+					break
+				}
+			}
+			if !found {
+				myQuests := models.Journey{
+					ID:     0,
+					Name:   "My Quests",
+					Quests: []models.Quest{*optimisticQuest},
+				}
+				m.data.Journeys = append([]models.Journey{myQuests}, m.data.Journeys...)
+			}
+		}
+
+		m.questList = newQuestList(m.data, m.width-4, m.height-10)
+
+		if m.selectedJourney != nil {
+			returnMode = JourneyDetailView
+			for _, j := range m.data.Journeys {
+				if j.ID == m.selectedJourney.ID {
+					m.selectedJourney = &j
+					m.journeyQuestList = newJourneyQuestList(&j, m.width-4, m.height-10)
+					break
+				}
+			}
+		}
+
+		message = fmt.Sprintf("✓ Quest created: %s", m.questFormData.Title)
+
+		m.questCreateCmd = createQuestCmd(
+			m.storage,
+			tempID,
 			m.questFormData.Title,
 			m.questFormData.Note,
 			m.questFormData.Difficulty,
 			journeyID,
 		)
-
-		if err != nil {
-			message = fmt.Sprintf("Failed to create quest: %v", err)
-			m.mode = returnMode
-			m.message = message
-			return m, nil
-		}
-
-		message = fmt.Sprintf("✓ Quest created: %s", quest.Title)
-
-		if m.selectedJourney != nil {
-			returnMode = JourneyDetailView
-		}
 
 	case JourneyFormView:
 		if m.journeyFormData.Name == "" {
@@ -479,20 +524,28 @@ func (m Model) handleFormCompletion() (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 
-		journey, err := m.storage.GetAPIClient().CreateJourney(m.journeyFormData.Name)
-		if err != nil {
-			message = fmt.Sprintf("Failed to create journey: %v", err)
-			m.mode = returnMode
-			m.message = message
-			return m, nil
+		tempID := -int(time.Now().UnixNano())
+		optimisticJourney := models.Journey{
+			ID:        tempID,
+			Name:      m.journeyFormData.Name,
+			AuthorID:  0,
+			Quests:    []models.Quest{},
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
 		}
 
-		message = fmt.Sprintf("✓ Journey created: %s", journey.Name)
+		m.data.Journeys = append(m.data.Journeys, optimisticJourney)
+
+		m.journeyList = newJourneyList(m.data, m.width-4, m.height-10)
+
+		message = fmt.Sprintf("✓ Journey created: %s", m.journeyFormData.Name)
 		m.currentSection = "journeys"
 
 		if m.selectedJourney != nil {
 			returnMode = JourneyDetailView
 		}
+
+		m.journeyCreateCmd = createJourneyCmd(m.storage, tempID, m.journeyFormData.Name)
 
 	case HabitFormView:
 		if m.habitFormData.Name == "" {
@@ -501,20 +554,38 @@ func (m Model) handleFormCompletion() (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 
-		habit, err := m.storage.GetAPIClient().CreateHabit(
+		tempID := -int(time.Now().UnixNano())
+		optimisticHabit := models.Habit{
+			ID:            tempID,
+			Name:          m.habitFormData.Name,
+			AuthorID:      0,
+			XPReward:      10,
+			GoldReward:    10,
+			CycleType:     m.habitFormData.CycleType,
+			CycleConfig:   m.habitFormData.CycleConfig,
+			Completed:     []string{},
+			CurrentStreak: 0,
+			MaxStreak:     0,
+			StartDate:     time.Now(),
+			EndDate:       nil,
+			IsDueToday:    true,
+			CreatedAt:     time.Now(),
+			UpdatedAt:     time.Now(),
+		}
+
+		m.data.Habits = append(m.data.Habits, optimisticHabit)
+
+		m.habitList = newHabitList(m.data, m.width-4, m.height-10)
+
+		message = fmt.Sprintf("✓ Habit created: %s", m.habitFormData.Name)
+
+		m.habitCreateCmd = createHabitCmd(
+			m.storage,
+			tempID,
 			m.habitFormData.Name,
 			m.habitFormData.CycleType,
 			m.habitFormData.CycleConfig,
 		)
-
-		if err != nil {
-			message = fmt.Sprintf("Failed to create habit: %v", err)
-			m.mode = returnMode
-			m.message = message
-			return m, nil
-		}
-
-		message = fmt.Sprintf("✓ Habit created: %s", habit.Name)
 
 	case EventFormView:
 		if m.eventFormData.Title == "" {
@@ -538,7 +609,40 @@ func (m Model) handleFormCompletion() (tea.Model, tea.Cmd) {
 			descriptionPtr = &m.eventFormData.Description
 		}
 
-		event, err := m.storage.GetAPIClient().CreateEvent(api.CreateEventRequest{
+		tempID := -int(time.Now().UnixNano())
+
+		eventDate, err := time.Parse("2006-01-02", m.eventFormData.Date)
+		if err != nil {
+			message = fmt.Sprintf("Invalid date format: %v", err)
+			m.mode = returnMode
+			m.currentSection = "calendar"
+			m.message = message
+			return m, nil
+		}
+
+		optimisticEvent := models.Event{
+			ID:          tempID,
+			Title:       m.eventFormData.Title,
+			Date:        eventDate,
+			EndDate:     nil,
+			Time:        timePtr,
+			EndTime:     endTimePtr,
+			Location:    locationPtr,
+			Description: descriptionPtr,
+			AuthorID:    0,
+			CreatedAt:   time.Now(),
+			UpdatedAt:   time.Now(),
+		}
+
+		m.data.Events = append(m.data.Events, optimisticEvent)
+		m.calendar.SetEvents(m.data.Events)
+
+		message = fmt.Sprintf("✓ Event created: %s", m.eventFormData.Title)
+
+		m.currentSection = "calendar"
+		returnMode = QuestListView
+
+		m.eventCreateCmd = createEventCmd(m.storage, tempID, api.CreateEventRequest{
 			Title:       m.eventFormData.Title,
 			Date:        m.eventFormData.Date,
 			Time:        timePtr,
@@ -546,19 +650,6 @@ func (m Model) handleFormCompletion() (tea.Model, tea.Cmd) {
 			Location:    locationPtr,
 			Description: descriptionPtr,
 		})
-
-		if err != nil {
-			message = fmt.Sprintf("Failed to create event: %v", err)
-			m.mode = returnMode
-			m.currentSection = "calendar"
-			m.message = message
-			return m, nil
-		}
-
-		message = fmt.Sprintf("✓ Event created: %s", event.Title)
-
-		m.currentSection = "calendar"
-		returnMode = QuestListView
 
 	case QuestEditFormView:
 		if m.editingQuest == nil {
@@ -575,26 +666,39 @@ func (m Model) handleFormCompletion() (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 
-		quest, err := m.storage.GetAPIClient().UpdateQuest(m.editingQuest.ID, api.UpdateQuestRequest{
+		// Optimistically update quest in data
+		questID := m.editingQuest.ID
+		for i := range m.data.Journeys {
+			for j := range m.data.Journeys[i].Quests {
+				if m.data.Journeys[i].Quests[j].ID == questID {
+					m.data.Journeys[i].Quests[j].Title = m.questFormData.Title
+					m.data.Journeys[i].Quests[j].Note = m.questFormData.Note
+					m.data.Journeys[i].Quests[j].Difficulty = m.questFormData.Difficulty
+					break
+				}
+			}
+		}
+
+		m.questList = newQuestList(m.data, m.width-4, m.height-10)
+		if m.selectedJourney != nil {
+			for _, j := range m.data.Journeys {
+				if j.ID == m.selectedJourney.ID {
+					m.selectedJourney = &j
+					m.journeyQuestList = newJourneyQuestList(&j, m.width-4, m.height-10)
+					break
+				}
+			}
+			returnMode = JourneyDetailView
+		}
+
+		message = fmt.Sprintf("Updating quest...")
+
+		// Keep editingQuest for rollback, fire async update
+		m.questUpdateCmd = updateQuestCmd(m.storage, questID, api.UpdateQuestRequest{
 			Title:      &m.questFormData.Title,
 			Note:       &m.questFormData.Note,
 			Difficulty: &m.questFormData.Difficulty,
 		})
-
-		if err != nil {
-			message = fmt.Sprintf("Failed to update quest: %v", err)
-			m.mode = QuestListView
-			m.message = message
-			m.editingQuest = nil
-			return m, nil
-		}
-
-		message = fmt.Sprintf("✓ Quest updated: %s", quest.Title)
-		m.editingQuest = nil
-
-		if m.selectedJourney != nil {
-			returnMode = JourneyDetailView
-		}
 
 	case HabitEditFormView:
 		if m.editingHabit == nil {
@@ -611,22 +715,26 @@ func (m Model) handleFormCompletion() (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 
-		habit, err := m.storage.GetAPIClient().UpdateHabit(m.editingHabit.ID, api.UpdateHabitRequest{
+		// Optimistically update habit in data
+		habitID := m.editingHabit.ID
+		for i := range m.data.Habits {
+			if m.data.Habits[i].ID == habitID {
+				m.data.Habits[i].Name = m.habitFormData.Name
+				m.data.Habits[i].CycleType = m.habitFormData.CycleType
+				m.data.Habits[i].CycleConfig = m.habitFormData.CycleConfig
+				break
+			}
+		}
+
+		m.habitList = newHabitList(m.data, m.width-4, m.height-10)
+		message = fmt.Sprintf("Updating habit...")
+
+		// Keep editingHabit for rollback, fire async update
+		m.habitUpdateCmd = updateHabitCmd(m.storage, habitID, api.UpdateHabitRequest{
 			Name:        &m.habitFormData.Name,
 			CycleType:   &m.habitFormData.CycleType,
 			CycleConfig: m.habitFormData.CycleConfig,
 		})
-
-		if err != nil {
-			message = fmt.Sprintf("Failed to update habit: %v", err)
-			m.mode = QuestListView
-			m.message = message
-			m.editingHabit = nil
-			return m, nil
-		}
-
-		message = fmt.Sprintf("✓ Habit updated: %s", habit.Name)
-		m.editingHabit = nil
 
 	case JourneyEditFormView:
 		if m.editingJourney == nil {
@@ -643,21 +751,23 @@ func (m Model) handleFormCompletion() (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 
-		journey, err := m.storage.GetAPIClient().UpdateJourney(m.editingJourney.ID, api.UpdateJourneyRequest{
-			Name: &m.journeyFormData.Name,
-		})
-
-		if err != nil {
-			message = fmt.Sprintf("Failed to update journey: %v", err)
-			m.mode = QuestListView
-			m.message = message
-			m.editingJourney = nil
-			return m, nil
+		// Optimistically update journey in data
+		journeyID := m.editingJourney.ID
+		for i := range m.data.Journeys {
+			if m.data.Journeys[i].ID == journeyID {
+				m.data.Journeys[i].Name = m.journeyFormData.Name
+				break
+			}
 		}
 
-		message = fmt.Sprintf("✓ Journey updated: %s", journey.Name)
+		m.journeyList = newJourneyList(m.data, m.width-4, m.height-10)
 		m.currentSection = "journeys"
-		m.editingJourney = nil
+		message = fmt.Sprintf("Updating journey...")
+
+		// Keep editingJourney for rollback, fire async update
+		m.journeyUpdateCmd = updateJourneyCmd(m.storage, journeyID, api.UpdateJourneyRequest{
+			Name: &m.journeyFormData.Name,
+		})
 
 	case EventEditFormView:
 		if m.editingEvent == nil {
@@ -714,12 +824,6 @@ func (m Model) handleFormCompletion() (tea.Model, tea.Cmd) {
 		returnMode = QuestListView
 	}
 
-	m = m.refreshData()
-
-	if m.mode == ErrorView {
-		return m, nil
-	}
-
 	if m.selectedJourney != nil && returnMode == JourneyDetailView {
 		for _, j := range m.data.Journeys {
 			if j.ID == m.selectedJourney.ID {
@@ -733,6 +837,43 @@ func (m Model) handleFormCompletion() (tea.Model, tea.Cmd) {
 	m.mode = returnMode
 	m.message = message
 	m.needsRedraw = true
+
+	var cmd tea.Cmd
+	if m.questCreateCmd != nil {
+		cmd = m.questCreateCmd
+		m.questCreateCmd = nil
+	} else if m.journeyCreateCmd != nil {
+		cmd = m.journeyCreateCmd
+		m.journeyCreateCmd = nil
+	} else if m.habitCreateCmd != nil {
+		cmd = m.habitCreateCmd
+		m.habitCreateCmd = nil
+	} else if m.eventCreateCmd != nil {
+		cmd = m.eventCreateCmd
+		m.eventCreateCmd = nil
+	} else if m.questUpdateCmd != nil {
+		cmd = m.questUpdateCmd
+		m.questUpdateCmd = nil
+	} else if m.journeyUpdateCmd != nil {
+		cmd = m.journeyUpdateCmd
+		m.journeyUpdateCmd = nil
+	} else if m.habitUpdateCmd != nil {
+		cmd = m.habitUpdateCmd
+		m.habitUpdateCmd = nil
+	} else if m.questDeleteCmd != nil {
+		cmd = m.questDeleteCmd
+		m.questDeleteCmd = nil
+	} else if m.journeyDeleteCmd != nil {
+		cmd = m.journeyDeleteCmd
+		m.journeyDeleteCmd = nil
+	} else if m.habitDeleteCmd != nil {
+		cmd = m.habitDeleteCmd
+		m.habitDeleteCmd = nil
+	}
+
+	if cmd != nil {
+		return m, tea.Batch(cmd, clearMessageAfter(1*time.Second))
+	}
 
 	return m, clearMessageAfter(1 * time.Second)
 }

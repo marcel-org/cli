@@ -126,6 +126,290 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			cmds = append(cmds, clearSyncStatusAfter(3*time.Second))
 		}
 
+	case questCreatedMsg:
+		if msg.err != nil {
+			for i := range m.data.Journeys {
+				for j := range m.data.Journeys[i].Quests {
+					if m.data.Journeys[i].Quests[j].ID == msg.tempID {
+						m.data.Journeys[i].Quests = append(
+							m.data.Journeys[i].Quests[:j],
+							m.data.Journeys[i].Quests[j+1:]...,
+						)
+						if m.data.Journeys[i].ID == 0 && len(m.data.Journeys[i].Quests) == 0 {
+							m.data.Journeys = append(m.data.Journeys[:i], m.data.Journeys[i+1:]...)
+						}
+						break
+					}
+				}
+			}
+			m.message = fmt.Sprintf("Failed to create quest: %v", msg.err)
+			m.questList = newQuestList(m.data, m.width-4, m.height-10)
+			m.needsRedraw = true
+			cmds = append(cmds, clearMessageAfter(3*time.Second))
+		} else if msg.quest != nil {
+			for i := range m.data.Journeys {
+				for j := range m.data.Journeys[i].Quests {
+					if m.data.Journeys[i].Quests[j].ID == msg.tempID {
+						m.data.Journeys[i].Quests[j] = *msg.quest
+						break
+					}
+				}
+			}
+			m.questList = newQuestList(m.data, m.width-4, m.height-10)
+			if m.selectedJourney != nil {
+				for _, j := range m.data.Journeys {
+					if j.ID == m.selectedJourney.ID {
+						m.selectedJourney = &j
+						m.journeyQuestList = newJourneyQuestList(&j, m.width-4, m.height-10)
+						break
+					}
+				}
+			}
+		}
+
+	case journeyCreatedMsg:
+		if msg.err != nil {
+			for i := range m.data.Journeys {
+				if m.data.Journeys[i].ID == msg.tempID {
+					m.data.Journeys = append(m.data.Journeys[:i], m.data.Journeys[i+1:]...)
+					break
+				}
+			}
+			m.message = fmt.Sprintf("Failed to create journey: %v", msg.err)
+			m.journeyList = newJourneyList(m.data, m.width-4, m.height-10)
+			m.needsRedraw = true
+			cmds = append(cmds, clearMessageAfter(3*time.Second))
+		} else if msg.journey != nil {
+			for i := range m.data.Journeys {
+				if m.data.Journeys[i].ID == msg.tempID {
+					m.data.Journeys[i] = *msg.journey
+					break
+				}
+			}
+			m.journeyList = newJourneyList(m.data, m.width-4, m.height-10)
+		}
+
+	case habitCreatedMsg:
+		if msg.err != nil {
+			for i := range m.data.Habits {
+				if m.data.Habits[i].ID == msg.tempID {
+					m.data.Habits = append(m.data.Habits[:i], m.data.Habits[i+1:]...)
+					break
+				}
+			}
+			m.message = fmt.Sprintf("Failed to create habit: %v", msg.err)
+			m.habitList = newHabitList(m.data, m.width-4, m.height-10)
+			m.needsRedraw = true
+			cmds = append(cmds, clearMessageAfter(3*time.Second))
+		} else if msg.habit != nil {
+			for i := range m.data.Habits {
+				if m.data.Habits[i].ID == msg.tempID {
+					m.data.Habits[i] = *msg.habit
+					break
+				}
+			}
+			m.habitList = newHabitList(m.data, m.width-4, m.height-10)
+		}
+
+	case eventCreatedMsg:
+		if msg.err != nil {
+			for i := range m.data.Events {
+				if m.data.Events[i].ID == msg.tempID {
+					m.data.Events = append(m.data.Events[:i], m.data.Events[i+1:]...)
+					break
+				}
+			}
+			m.message = fmt.Sprintf("Failed to create event: %v", msg.err)
+			m.calendar.SetEvents(m.data.Events)
+			m.needsRedraw = true
+			cmds = append(cmds, clearMessageAfter(3*time.Second))
+		} else if msg.event != nil {
+			for i := range m.data.Events {
+				if m.data.Events[i].ID == msg.tempID {
+					m.data.Events[i] = *msg.event
+					break
+				}
+			}
+			m.calendar.SetEvents(m.data.Events)
+		}
+
+	case questDeletedMsg:
+		if msg.err != nil {
+			// Rollback: restore the deleted quest
+			if m.confirmQuest != nil {
+				found := false
+				for i := range m.data.Journeys {
+					if m.confirmQuest.JourneyID != nil && m.data.Journeys[i].ID == *m.confirmQuest.JourneyID {
+						m.data.Journeys[i].Quests = append(m.data.Journeys[i].Quests, *m.confirmQuest)
+						found = true
+						break
+					} else if m.confirmQuest.JourneyID == nil && m.data.Journeys[i].ID == 0 {
+						m.data.Journeys[i].Quests = append(m.data.Journeys[i].Quests, *m.confirmQuest)
+						found = true
+						break
+					}
+				}
+				// If journey not found, create "My Quests" journey
+				if !found && m.confirmQuest.JourneyID == nil {
+					myQuests := models.Journey{
+						ID:     0,
+						Name:   "My Quests",
+						Quests: []models.Quest{*m.confirmQuest},
+					}
+					m.data.Journeys = append([]models.Journey{myQuests}, m.data.Journeys...)
+				}
+				m.questList = newQuestList(m.data, m.width-4, m.height-10)
+				m.needsRedraw = true
+			}
+			m.message = fmt.Sprintf("Failed to delete quest: %v", msg.err)
+			cmds = append(cmds, clearMessageAfter(3*time.Second))
+		} else {
+			m.message = "Quest deleted successfully"
+			cmds = append(cmds, clearMessageAfter(1*time.Second))
+		}
+		m.confirmQuest = nil
+
+	case habitDeletedMsg:
+		if msg.err != nil {
+			// Rollback: restore the deleted habit
+			if m.confirmHabit != nil {
+				m.data.Habits = append(m.data.Habits, *m.confirmHabit)
+				m.habitList = newHabitList(m.data, m.width-4, m.height-10)
+				m.needsRedraw = true
+			}
+			m.message = fmt.Sprintf("Failed to delete habit: %v", msg.err)
+			cmds = append(cmds, clearMessageAfter(3*time.Second))
+		} else {
+			m.message = "Habit deleted successfully"
+			cmds = append(cmds, clearMessageAfter(1*time.Second))
+		}
+		m.confirmHabit = nil
+
+	case journeyDeletedMsg:
+		if msg.err != nil {
+			// Rollback: restore the deleted journey
+			if m.confirmJourney != nil {
+				m.data.Journeys = append(m.data.Journeys, *m.confirmJourney)
+				m.journeyList = newJourneyList(m.data, m.width-4, m.height-10)
+				m.needsRedraw = true
+			}
+			m.message = fmt.Sprintf("Failed to delete journey: %v", msg.err)
+			cmds = append(cmds, clearMessageAfter(3*time.Second))
+		} else {
+			m.message = "Journey deleted successfully"
+			cmds = append(cmds, clearMessageAfter(1*time.Second))
+		}
+		m.confirmJourney = nil
+
+	case questUpdatedMsg:
+		if msg.err != nil {
+			// Rollback: restore the original quest
+			if m.editingQuest != nil {
+				for i := range m.data.Journeys {
+					for j := range m.data.Journeys[i].Quests {
+						if m.data.Journeys[i].Quests[j].ID == msg.questID {
+							m.data.Journeys[i].Quests[j] = *m.editingQuest
+							break
+						}
+					}
+				}
+				m.questList = newQuestList(m.data, m.width-4, m.height-10)
+				if m.selectedJourney != nil {
+					for _, j := range m.data.Journeys {
+						if j.ID == m.selectedJourney.ID {
+							m.selectedJourney = &j
+							m.journeyQuestList = newJourneyQuestList(&j, m.width-4, m.height-10)
+							break
+						}
+					}
+				}
+				m.needsRedraw = true
+			}
+			m.message = fmt.Sprintf("Failed to update quest: %v", msg.err)
+			cmds = append(cmds, clearMessageAfter(3*time.Second))
+		} else if msg.quest != nil {
+			// Replace with server data
+			for i := range m.data.Journeys {
+				for j := range m.data.Journeys[i].Quests {
+					if m.data.Journeys[i].Quests[j].ID == msg.questID {
+						m.data.Journeys[i].Quests[j] = *msg.quest
+						break
+					}
+				}
+			}
+			m.questList = newQuestList(m.data, m.width-4, m.height-10)
+			if m.selectedJourney != nil {
+				for _, j := range m.data.Journeys {
+					if j.ID == m.selectedJourney.ID {
+						m.selectedJourney = &j
+						m.journeyQuestList = newJourneyQuestList(&j, m.width-4, m.height-10)
+						break
+					}
+				}
+			}
+			m.message = "Quest updated successfully"
+			cmds = append(cmds, clearMessageAfter(1*time.Second))
+		}
+		m.editingQuest = nil
+
+	case habitUpdatedMsg:
+		if msg.err != nil {
+			// Rollback: restore the original habit
+			if m.editingHabit != nil {
+				for i := range m.data.Habits {
+					if m.data.Habits[i].ID == msg.habitID {
+						m.data.Habits[i] = *m.editingHabit
+						break
+					}
+				}
+				m.habitList = newHabitList(m.data, m.width-4, m.height-10)
+				m.needsRedraw = true
+			}
+			m.message = fmt.Sprintf("Failed to update habit: %v", msg.err)
+			cmds = append(cmds, clearMessageAfter(3*time.Second))
+		} else if msg.habit != nil {
+			// Replace with server data
+			for i := range m.data.Habits {
+				if m.data.Habits[i].ID == msg.habitID {
+					m.data.Habits[i] = *msg.habit
+					break
+				}
+			}
+			m.habitList = newHabitList(m.data, m.width-4, m.height-10)
+			m.message = "Habit updated successfully"
+			cmds = append(cmds, clearMessageAfter(1*time.Second))
+		}
+		m.editingHabit = nil
+
+	case journeyUpdatedMsg:
+		if msg.err != nil {
+			// Rollback: restore the original journey
+			if m.editingJourney != nil {
+				for i := range m.data.Journeys {
+					if m.data.Journeys[i].ID == msg.journeyID {
+						m.data.Journeys[i] = *m.editingJourney
+						break
+					}
+				}
+				m.journeyList = newJourneyList(m.data, m.width-4, m.height-10)
+				m.needsRedraw = true
+			}
+			m.message = fmt.Sprintf("Failed to update journey: %v", msg.err)
+			cmds = append(cmds, clearMessageAfter(3*time.Second))
+		} else if msg.journey != nil {
+			// Replace with server data
+			for i := range m.data.Journeys {
+				if m.data.Journeys[i].ID == msg.journeyID {
+					m.data.Journeys[i] = *msg.journey
+					break
+				}
+			}
+			m.journeyList = newJourneyList(m.data, m.width-4, m.height-10)
+			m.message = "Journey updated successfully"
+			cmds = append(cmds, clearMessageAfter(1*time.Second))
+		}
+		m.editingJourney = nil
+
 	case clearMessageMsg:
 		m.message = ""
 

@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"marcel-cli/api"
 	"marcel-cli/models"
 	"marcel-cli/storage"
 	"marcel-cli/ui/components"
@@ -47,6 +48,133 @@ type backgroundSyncMsg struct {
 
 type authCheckMsg struct {
 	err error
+}
+
+type questCreatedMsg struct {
+	tempID int
+	quest  *models.Quest
+	err    error
+}
+
+type journeyCreatedMsg struct {
+	tempID  int
+	journey *models.Journey
+	err     error
+}
+
+type habitCreatedMsg struct {
+	tempID int
+	habit  *models.Habit
+	err    error
+}
+
+type eventCreatedMsg struct {
+	tempID int
+	event  *models.Event
+	err    error
+}
+
+type questDeletedMsg struct {
+	questID int
+	err     error
+}
+
+type journeyDeletedMsg struct {
+	journeyID int
+	err       error
+}
+
+type habitDeletedMsg struct {
+	habitID int
+	err     error
+}
+
+type questUpdatedMsg struct {
+	questID int
+	quest   *models.Quest
+	err     error
+}
+
+type journeyUpdatedMsg struct {
+	journeyID int
+	journey   *models.Journey
+	err       error
+}
+
+type habitUpdatedMsg struct {
+	habitID int
+	habit   *models.Habit
+	err     error
+}
+
+func createQuestCmd(s *storage.Storage, tempID int, title, note, difficulty string, journeyID *int) tea.Cmd {
+	return func() tea.Msg {
+		quest, err := s.GetAPIClient().CreateQuest(title, note, difficulty, journeyID)
+		return questCreatedMsg{tempID: tempID, quest: quest, err: err}
+	}
+}
+
+func createJourneyCmd(s *storage.Storage, tempID int, name string) tea.Cmd {
+	return func() tea.Msg {
+		journey, err := s.GetAPIClient().CreateJourney(name)
+		return journeyCreatedMsg{tempID: tempID, journey: journey, err: err}
+	}
+}
+
+func createHabitCmd(s *storage.Storage, tempID int, name, cycleType string, cycleConfig any) tea.Cmd {
+	return func() tea.Msg {
+		habit, err := s.GetAPIClient().CreateHabit(name, cycleType, cycleConfig)
+		return habitCreatedMsg{tempID: tempID, habit: habit, err: err}
+	}
+}
+
+func createEventCmd(s *storage.Storage, tempID int, req api.CreateEventRequest) tea.Cmd {
+	return func() tea.Msg {
+		event, err := s.GetAPIClient().CreateEvent(req)
+		return eventCreatedMsg{tempID: tempID, event: event, err: err}
+	}
+}
+
+func deleteQuestCmd(s *storage.Storage, questID int) tea.Cmd {
+	return func() tea.Msg {
+		err := s.GetAPIClient().DeleteQuest(questID)
+		return questDeletedMsg{questID: questID, err: err}
+	}
+}
+
+func deleteJourneyCmd(s *storage.Storage, journeyID int) tea.Cmd {
+	return func() tea.Msg {
+		err := s.GetAPIClient().DeleteJourney(journeyID)
+		return journeyDeletedMsg{journeyID: journeyID, err: err}
+	}
+}
+
+func deleteHabitCmd(s *storage.Storage, habitID int) tea.Cmd {
+	return func() tea.Msg {
+		err := s.GetAPIClient().DeleteHabit(habitID)
+		return habitDeletedMsg{habitID: habitID, err: err}
+	}
+}
+
+func updateQuestCmd(s *storage.Storage, questID int, updates api.UpdateQuestRequest) tea.Cmd {
+	return func() tea.Msg {
+		quest, err := s.GetAPIClient().UpdateQuest(questID, updates)
+		return questUpdatedMsg{questID: questID, quest: quest, err: err}
+	}
+}
+
+func updateJourneyCmd(s *storage.Storage, journeyID int, updates api.UpdateJourneyRequest) tea.Cmd {
+	return func() tea.Msg {
+		journey, err := s.GetAPIClient().UpdateJourney(journeyID, updates)
+		return journeyUpdatedMsg{journeyID: journeyID, journey: journey, err: err}
+	}
+}
+
+func updateHabitCmd(s *storage.Storage, habitID int, updates api.UpdateHabitRequest) tea.Cmd {
+	return func() tea.Msg {
+		habit, err := s.GetAPIClient().UpdateHabit(habitID, updates)
+		return habitUpdatedMsg{habitID: habitID, habit: habit, err: err}
+	}
 }
 
 func loadDataCmd(s *storage.Storage) tea.Cmd {
@@ -135,6 +263,16 @@ type Model struct {
 	editingEvent     *models.Event
 	syncStatus       SyncStatus
 	syncSpinner      spinner.Model
+	questCreateCmd   tea.Cmd
+	journeyCreateCmd tea.Cmd
+	habitCreateCmd   tea.Cmd
+	eventCreateCmd   tea.Cmd
+	questDeleteCmd   tea.Cmd
+	journeyDeleteCmd tea.Cmd
+	habitDeleteCmd   tea.Cmd
+	questUpdateCmd   tea.Cmd
+	journeyUpdateCmd tea.Cmd
+	habitUpdateCmd   tea.Cmd
 }
 
 func NewModel() (*Model, error) {
