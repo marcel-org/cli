@@ -341,6 +341,36 @@ func NewJourneyForm() (*JourneyForm, error) {
 	return form, nil
 }
 
+type SpaceForm struct {
+	Name string
+}
+
+func BuildSpaceForm(formData *SpaceForm) *huh.Form {
+	theme := huh.ThemeCharm()
+	theme.Focused.Base = lipgloss.NewStyle().BorderForeground(colors.BrandOrange)
+	theme.Focused.Title = lipgloss.NewStyle().Foreground(colors.BrandOrange).Bold(true)
+	theme.Focused.TextInput.Cursor = lipgloss.NewStyle().Foreground(colors.BrandOrange)
+
+	return huh.NewForm(
+		huh.NewGroup(
+			huh.NewInput().
+				Title("Space Name").
+				Placeholder("Name your space").
+				Value(&formData.Name).
+				Validate(func(s string) error {
+					if len(s) == 0 {
+						return fmt.Errorf("name cannot be empty")
+					}
+					return nil
+				}),
+		),
+	).
+		WithTheme(theme).
+		WithWidth(60).
+		WithHeight(10).
+		WithKeyMap(getFormKeyMap())
+}
+
 func NewQuestFormSimple() (*QuestForm, error) {
 	form := &QuestForm{}
 

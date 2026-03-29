@@ -22,6 +22,40 @@ type Quest struct {
 	UpdatedAt  time.Time `json:"updatedAt"`
 }
 
+type User struct {
+	ID           int    `json:"id"`
+	Username     string `json:"username"`
+	Level        int    `json:"level"`
+	Shape        string `json:"shape"`
+	Color        string `json:"color"`
+	HatID        *int   `json:"hatId"`
+	GlassesID    *int   `json:"glassesId"`
+	HandID       *int   `json:"handId"`
+	BackgroundID *int   `json:"backgroundId"`
+	XP           int    `json:"xp"`
+	XPMax        int    `json:"xpMax"`
+}
+
+type SpaceMember struct {
+	ID         int       `json:"id"`
+	SpaceID    int       `json:"spaceId"`
+	UserID     int       `json:"userId"`
+	Permission string    `json:"permission"`
+	CreatedAt  time.Time `json:"createdAt"`
+	UpdatedAt  time.Time `json:"updatedAt"`
+	User       User      `json:"user"`
+}
+
+type Space struct {
+	ID        int           `json:"id"`
+	Name      string        `json:"name"`
+	OwnerID   int           `json:"ownerId"`
+	CreatedAt time.Time     `json:"createdAt"`
+	UpdatedAt time.Time     `json:"updatedAt"`
+	Owner     User          `json:"owner"`
+	Members   []SpaceMember `json:"members"`
+}
+
 type Journey struct {
 	ID        int       `json:"id"`
 	Name      string    `json:"name"`
@@ -70,6 +104,7 @@ type AppData struct {
 	Journeys       []Journey
 	Habits         []Habit
 	Events         []Event
+	Spaces         []Space
 	CurrentJourney int
 	CurrentSection string
 }
@@ -94,6 +129,7 @@ func NewAppData() AppData {
 		Journeys:       []Journey{},
 		Habits:         []Habit{},
 		Events:         []Event{},
+		Spaces:         []Space{},
 		CurrentJourney: 0,
 	}
 }

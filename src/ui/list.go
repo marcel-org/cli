@@ -123,10 +123,14 @@ func (d questDelegate) Render(w io.Writer, m list.Model, index int, listItem lis
 }
 
 func newQuestList(data *models.AppData, width, height int) list.Model {
+	return newQuestListFromJourneys(data.Journeys, width, height)
+}
+
+func newQuestListFromJourneys(journeys []models.Journey, width, height int) list.Model {
 	incompleteItems := []list.Item{}
 	completedItems := []list.Item{}
 
-	for _, journey := range data.Journeys {
+	for _, journey := range journeys {
 		for _, quest := range journey.Quests {
 			item := questItem{
 				quest:   quest,
@@ -316,9 +320,13 @@ func (d journeyDelegate) Render(w io.Writer, m list.Model, index int, listItem l
 }
 
 func newJourneyList(data *models.AppData, width, height int) list.Model {
+	return newJourneyListFromJourneys(data.Journeys, width, height)
+}
+
+func newJourneyListFromJourneys(journeys []models.Journey, width, height int) list.Model {
 	items := []list.Item{}
 
-	for _, journey := range data.Journeys {
+	for _, journey := range journeys {
 		if journey.ID != 0 {
 			items = append(items, journeyItem{
 				journey: journey,
@@ -341,26 +349,129 @@ func newJourneyList(data *models.AppData, width, height int) list.Model {
 }
 
 func newJourneyQuestList(journey *models.Journey, width, height int) list.Model {
-	incompleteItems := []list.Item{}
-	completedItems := []list.Item{}
+	return newQuestListFromJourneys([]models.Journey{*journey}, width, height)
+}
 
-	for _, quest := range journey.Quests {
-		item := questItem{
-			quest:   quest,
-			journey: journey.Name,
-		}
-		if quest.Done {
-			completedItems = append(completedItems, item)
-		} else {
-			incompleteItems = append(incompleteItems, item)
-		}
+type spaceItem struct {
+	space models.Space
+}
+
+func (i spaceItem) Title() string {
+	return i.space.Name
+}
+
+func (i spaceItem) Description() string {
+	return fmt.Sprintf("%d members • owner %s", len(i.space.Members), i.space.Owner.Username)
+}
+
+func (i spaceItem) FilterValue() string {
+	return i.space.Name
+}
+
+type spaceDelegate struct{}
+
+func (d spaceDelegate) Height() int { return 1 }
+
+func (d spaceDelegate) Spacing() int { return 0 }
+
+func (d spaceDelegate) Update(_ tea.Msg, _ *list.Model) tea.Cmd {
+	return nil
+}
+
+func (d spaceDelegate) Render(w io.Writer, m list.Model, index int, listItem list.Item) {
+	i, ok := listItem.(spaceItem)
+	if !ok {
+		return
 	}
 
-	items := append(incompleteItems, completedItems...)
+	isSelected := index == m.Index()
+	meta := lipgloss.NewStyle().
+		Foreground(colors.SecondaryText).
+		Render(fmt.Sprintf(" %d members • owner %s", len(i.space.Members), i.space.Owner.Username))
 
-	delegate := questDelegate{}
+	var str string
+	if isSelected {
+		str = SelectedItemStyle.Render(i.space.Name) + meta
+	} else {
+		str = NormalItemStyle.Render(i.space.Name) + meta
+	}
 
-	l := list.New(items, delegate, width, height)
+	fmt.Fprint(w, str)
+}
+
+func newSpaceList(data *models.AppData, width, height int) list.Model {
+	items := []list.Item{}
+
+	for _, space := range data.Spaces {
+		items = append(items, spaceItem{space: space})
+	}
+
+	l := list.New(items, spaceDelegate{}, width, height)
+	l.Title = ""
+	l.SetShowTitle(false)
+	l.SetShowStatusBar(false)
+	l.SetShowHelp(false)
+	l.SetFilteringEnabled(true)
+	l.Styles.FilterPrompt = lipgloss.NewStyle().Foreground(colors.BrandOrange)
+	l.Styles.FilterCursor = lipgloss.NewStyle().Foreground(colors.BrandOrange)
+
+	return l
+}
+
+type memberItem struct {
+	member models.SpaceMember
+}
+
+func (i memberItem) Title() string {
+	return i.member.User.Username
+}
+
+func (i memberItem) Description() string {
+	return fmt.Sprintf("%s permission • level %d", i.member.Permission, i.member.User.Level)
+}
+
+func (i memberItem) FilterValue() string {
+	return i.member.User.Username
+}
+
+type memberDelegate struct{}
+
+func (d memberDelegate) Height() int { return 1 }
+
+func (d memberDelegate) Spacing() int { return 0 }
+
+func (d memberDelegate) Update(_ tea.Msg, _ *list.Model) tea.Cmd {
+	return nil
+}
+
+func (d memberDelegate) Render(w io.Writer, m list.Model, index int, listItem list.Item) {
+	i, ok := listItem.(memberItem)
+	if !ok {
+		return
+	}
+
+	isSelected := index == m.Index()
+	meta := lipgloss.NewStyle().
+		Foreground(colors.SecondaryText).
+		Render(fmt.Sprintf(" %s • level %d", i.member.Permission, i.member.User.Level))
+
+	var str string
+	if isSelected {
+		str = SelectedItemStyle.Render(i.member.User.Username) + meta
+	} else {
+		str = NormalItemStyle.Render(i.member.User.Username) + meta
+	}
+
+	fmt.Fprint(w, str)
+}
+
+func newMemberList(members []models.SpaceMember, width, height int) list.Model {
+	items := make([]list.Item, 0, len(members))
+	for _, member := range members {
+		items = append(items, memberItem{member: member})
+	}
+
+	l := list.New(items, memberDelegate{}, width, height)
 	l.Title = ""
 	l.SetShowTitle(false)
 	l.SetShowStatusBar(false)

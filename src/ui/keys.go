@@ -105,7 +105,7 @@ func (m Model) handleJourneyListKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return m, tea.Quit
 
 	case "tab":
-		m.currentSection = "calendar"
+		m.currentSection = "spaces"
 		return m, nil
 
 	case "shift+tab":
@@ -140,6 +140,48 @@ func (m Model) handleJourneyListKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	default:
 		var cmd tea.Cmd
 		m.journeyList, cmd = m.journeyList.Update(msg)
+		return m, cmd
+	}
+
+	return m, nil
+}
+
+func (m Model) handleSpaceListKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+	switch msg.String() {
+	case "ctrl+c", "q":
+		return m, tea.Quit
+
+	case "tab":
+		m.currentSection = "calendar"
+		return m, nil
+
+	case "shift+tab":
+		m.currentSection = "journeys"
+		return m, nil
+
+	case "?":
+		m.mode = HelpView
+		return m, nil
+
+	case "r":
+		return m.refreshData(), nil
+
+	case "n":
+		return m.createNewSpace()
+
+	case " ", "enter":
+		if item, ok := m.spaceList.SelectedItem().(spaceItem); ok {
+			return m.enterSpace(item.space), nil
+		}
+
+	case "e":
+		if item, ok := m.spaceList.SelectedItem().(spaceItem); ok {
+			return m.editSpace(item.space)
+		}
+
+	default:
+		var cmd tea.Cmd
+		m.spaceList, cmd = m.spaceList.Update(msg)
 		return m, cmd
 	}
 
@@ -190,7 +232,7 @@ func (m Model) handleCalendarKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 		return m, nil
 
 	case "shift+tab":
-		m.currentSection = "journeys"
+		m.currentSection = "spaces"
 		return m, nil
 
 	case "?":
@@ -284,6 +326,100 @@ func (m Model) handleJourneyDetailKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
+func (m Model) handleSpaceDetailKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
+	switch msg.String() {
+	case "ctrl+c", "q":
+		return m, tea.Quit
+
+	case "esc":
+		m.mode = QuestListView
+		m.currentSection = "spaces"
+		m.selectedSpace = nil
+		m.spaceSection = "quests"
+		return m, nil
+
+	case "tab":
+		switch m.spaceSection {
+		case "quests":
+			m.spaceSection = "journeys"
+		case "journeys":
+			m.spaceSection = "members"
+		default:
+			m.spaceSection = "quests"
+		}
+		return m, nil
+
+	case "shift+tab":
+		switch m.spaceSection {
+		case "quests":
+			m.spaceSection = "members"
+		case "journeys":
+			m.spaceSection = "quests"
+		default:
+			m.spaceSection = "journeys"
+		}
+		return m, nil
+
+	case "?":
+		m.mode = HelpView
+		return m, nil
+
+	case "r":
+		return m.refreshData(), nil
+	}
+
+	switch m.spaceSection {
+	case "quests":
+		switch msg.String() {
+		case "n":
+			return m.createNewQuestInSpace()
+		case " ", "enter":
+			if item, ok := m.spaceQuestList.SelectedItem().(questItem); ok {
+				return m.toggleQuest(item.quest)
+			}
+		case "d":
+			if item, ok := m.spaceQuestList.SelectedItem().(questItem); ok {
+				return m.showDeleteConfirm(item.quest), nil
+			}
+		case "e":
+			if item, ok := m.spaceQuestList.SelectedItem().(questItem); ok {
+				return m.editQuest(item.quest)
+			}
+		default:
+			var cmd tea.Cmd
+			m.spaceQuestList, cmd = m.spaceQuestList.Update(msg)
+			return m, cmd
+		}
+	case "journeys":
+		switch msg.String() {
+		case "n":
+			return m.createNewJourneyInSpace()
+		case " ", "enter":
+			if item, ok := m.spaceJourneyList.SelectedItem().(journeyItem); ok {
+				return m.enterJourney(item.journey), nil
+			}
+		case "d":
+			if item, ok := m.spaceJourneyList.SelectedItem().(journeyItem); ok {
+				return m.showDeleteConfirmJourney(item.journey), nil
+			}
+		case "e":
+			if item, ok := m.spaceJourneyList.SelectedItem().(journeyItem); ok {
+				return m.editJourney(item.journey)
+			}
+		default:
+			var cmd tea.Cmd
+			m.spaceJourneyList, cmd = m.spaceJourneyList.Update(msg)
+			return m, cmd
+		}
+	case "members":
+		var cmd tea.Cmd
+		m.spaceMemberList, cmd = m.spaceMemberList.Update(msg)
+		return m, cmd
+	}
+
+	return m, nil
+}
+
 func (m Model) handleErrorKeys(msg tea.KeyMsg) (tea.Model, tea.Cmd) {
 	switch msg.String() {
 	case "ctrl+c", "q":
@@ -339,6 +475,8 @@ func (m Model) handleFormUpdate(msg tea.Msg) (tea.Model, tea.Cmd) {
 		form = m.journeyForm
 		if m.selectedJourney != nil {
 			returnMode = JourneyDetailView
+		} else if m.selectedSpace != nil {
+			returnMode = SpaceDetailView
 		} else {
 			returnMode = QuestListView
 		}
@@ -349,16 +487,26 @@ func (m Model) handleFormUpdate(msg tea.Msg) (tea.Model, tea.Cmd) {
 		form = m.eventForm
 		returnMode = QuestListView
 		m.currentSection = "calendar"
+	case SpaceFormView:
+		form = m.spaceForm
+		returnMode = QuestListView
+		m.currentSection = "spaces"
 	case QuestEditFormView:
 		form = m.questForm
 		if m.selectedJourney != nil {
 			returnMode = JourneyDetailView
+		} else if m.selectedSpace != nil {
+			returnMode = SpaceDetailView
 		} else {
 			returnMode = QuestListView
 		}
 	case JourneyEditFormView:
 		form = m.journeyForm
-		returnMode = QuestListView
+		if m.selectedSpace != nil {
+			returnMode = SpaceDetailView
+		} else {
+			returnMode = QuestListView
+		}
 	case HabitEditFormView:
 		form = m.habitForm
 		returnMode = QuestListView
@@ -366,6 +514,14 @@ func (m Model) handleFormUpdate(msg tea.Msg) (tea.Model, tea.Cmd) {
 		form = m.eventForm
 		returnMode = QuestListView
 		m.currentSection = "calendar"
+	case SpaceEditFormView:
+		form = m.spaceForm
+		if m.selectedSpace != nil {
+			returnMode = SpaceDetailView
+		} else {
+			returnMode = QuestListView
+		}
+		m.currentSection = "spaces"
 	}
 
 	if form == nil {
@@ -384,6 +540,8 @@ func (m Model) handleFormUpdate(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.habitForm = f
 		case EventFormView:
 			m.eventForm = f
+		case SpaceFormView:
+			m.spaceForm = f
 		case QuestEditFormView:
 			m.questForm = f
 		case JourneyEditFormView:
@@ -392,6 +550,8 @@ func (m Model) handleFormUpdate(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.habitForm = f
 		case EventEditFormView:
 			m.eventForm = f
+		case SpaceEditFormView:
+			m.spaceForm = f
 		}
 
 		if f.State == huh.StateCompleted {

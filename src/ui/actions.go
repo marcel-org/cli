@@ -10,6 +10,66 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
+func journeysForSpace(data *models.AppData, spaceID int) []models.Journey {
+	journeys := []models.Journey{}
+	for _, journey := range data.Journeys {
+		if journey.SpaceID != nil && *journey.SpaceID == spaceID {
+			journeys = append(journeys, journey)
+		}
+	}
+	return journeys
+}
+
+func (m *Model) refreshSelectedSpaceLists() {
+	if m.selectedSpace == nil {
+		return
+	}
+
+	found := false
+	for _, space := range m.data.Spaces {
+		if space.ID == m.selectedSpace.ID {
+			spaceCopy := space
+			m.selectedSpace = &spaceCopy
+			found = true
+			break
+		}
+	}
+	if !found {
+		m.selectedSpace = nil
+		if m.mode == SpaceDetailView {
+			m.mode = QuestListView
+			m.currentSection = "spaces"
+		}
+		return
+	}
+
+	spaceJourneys := journeysForSpace(m.data, m.selectedSpace.ID)
+	m.spaceQuestList = newQuestListFromJourneys(spaceJourneys, m.width-4, m.height-10)
+	m.spaceJourneyList = newJourneyListFromJourneys(spaceJourneys, m.width-4, m.height-10)
+	m.spaceMemberList = newMemberList(m.selectedSpace.Members, m.width-4, m.height-10)
+}
+
+func (m *Model) refreshSelectedJourneyList() {
+	if m.selectedJourney == nil {
+		return
+	}
+
+	for _, journey := range m.data.Journeys {
+		if journey.ID == m.selectedJourney.ID {
+			journeyCopy := journey
+			m.selectedJourney = &journeyCopy
+			m.journeyQuestList = newJourneyQuestList(&journeyCopy, m.width-4, m.height-10)
+			return
+		}
+	}
+
+	m.selectedJourney = nil
+	if m.mode == JourneyDetailView {
+		m.mode = QuestListView
+		m.currentSection = "journeys"
+	}
+}
+
 func (m Model) toggleQuest(quest models.Quest) (Model, tea.Cmd) {
 	newDone := !quest.Done
 
@@ -28,6 +88,7 @@ func (m Model) toggleQuest(quest models.Quest) (Model, tea.Cmd) {
 	}
 
 	m.questList = newQuestList(m.data, m.width-4, m.height-8)
+	m.refreshSelectedSpaceLists()
 
 	if newDone {
 		m.message = "✓ Quest completed!"
@@ -65,6 +126,7 @@ func (m Model) confirmDeleteQuest() (Model, tea.Cmd) {
 	}
 
 	m.questList = newQuestList(m.data, m.width-4, m.height-8)
+	m.refreshSelectedSpaceLists()
 	m.message = "Deleting quest..."
 	m.mode = QuestListView
 
@@ -119,6 +181,7 @@ func (m Model) confirmDeleteJourney() (Model, tea.Cmd) {
 	m.data.Journeys = newJourneys
 
 	m.journeyList = newJourneyList(m.data, m.width-4, m.height-10)
+	m.refreshSelectedSpaceLists()
 	m.message = "Deleting journey..."
 	m.mode = QuestListView
 
@@ -173,6 +236,22 @@ func (m Model) createNewQuestInJourney() (Model, tea.Cmd) {
 	return m, m.questForm.Init()
 }
 
+func (m Model) createNewQuestInSpace() (Model, tea.Cmd) {
+	if m.selectedSpace == nil {
+		return m, nil
+	}
+
+	m.questFormData = &QuestForm{
+		Title:      "",
+		Note:       "",
+		Difficulty: "medium",
+		JourneyID:  nil,
+	}
+	m.questForm = BuildQuestForm(m.questFormData, journeysForSpace(m.data, m.selectedSpace.ID))
+	m.mode = QuestFormView
+	return m, m.questForm.Init()
+}
+
 func (m Model) createNewHabit() (Model, tea.Cmd) {
 	m.habitFormData = &HabitForm{
 		Name:        "",
@@ -193,6 +272,24 @@ func (m Model) createNewJourney() (Model, tea.Cmd) {
 	return m, m.journeyForm.Init()
 }
 
+func (m Model) createNewJourneyInSpace() (Model, tea.Cmd) {
+	if m.selectedSpace == nil {
+		return m, nil
+	}
+
+	m.journeyFormData = &JourneyForm{Name: ""}
+	m.journeyForm = BuildJourneyForm(m.journeyFormData)
+	m.mode = JourneyFormView
+	return m, m.journeyForm.Init()
+}
+
+func (m Model) createNewSpace() (Model, tea.Cmd) {
+	m.spaceFormData = &SpaceForm{Name: ""}
+	m.spaceForm = BuildSpaceForm(m.spaceFormData)
+	m.mode = SpaceFormView
+	return m, m.spaceForm.Init()
+}
+
 func (m Model) enterJourney(journey models.Journey) Model {
 	m.selectedJourney = &journey
 	m.journeyQuestList = newJourneyQuestList(&journey, m.width-4, m.height-10)
@@ -200,7 +297,30 @@ func (m Model) enterJourney(journey models.Journey) Model {
 	return m
 }
 
+func (m Model) enterSpace(space models.Space) Model {
+	spaceCopy := space
+	m.selectedSpace = &spaceCopy
+	m.spaceSection = "quests"
+	m.refreshSelectedSpaceLists()
+	m.mode = SpaceDetailView
+	return m
+}
+
 func (m Model) refreshData() Model {
+	previousMode := m.mode
+	previousSection := m.currentSection
+	previousSpaceSection := m.spaceSection
+
+	var selectedJourneyID int
+	if m.selectedJourney != nil {
+		selectedJourneyID = m.selectedJourney.ID
+	}
+
+	var selectedSpaceID int
+	if m.selectedSpace != nil {
+		selectedSpaceID = m.selectedSpace.ID
+	}
+
 	m.mode = LoadingView
 	m.message = "Refreshing data..."
 
@@ -215,8 +335,27 @@ func (m Model) refreshData() Model {
 	m.questList = newQuestList(m.data, m.width-4, m.height-10)
 	m.habitList = newHabitList(m.data, m.width-4, m.height-10)
 	m.journeyList = newJourneyList(m.data, m.width-4, m.height-10)
+	m.spaceList = newSpaceList(m.data, m.width-4, m.height-10)
 	m.calendar.SetEvents(m.data.Events)
-	m.mode = QuestListView
+
+	m.mode = previousMode
+	m.currentSection = previousSection
+	m.spaceSection = previousSpaceSection
+
+	if selectedJourneyID != 0 {
+		m.selectedJourney = &models.Journey{ID: selectedJourneyID}
+		m.refreshSelectedJourneyList()
+	} else {
+		m.selectedJourney = nil
+	}
+
+	if selectedSpaceID != 0 {
+		m.selectedSpace = &models.Space{ID: selectedSpaceID}
+		m.refreshSelectedSpaceLists()
+	} else {
+		m.selectedSpace = nil
+	}
+
 	m.message = "✓ Data refreshed!"
 
 	return m
@@ -390,6 +529,14 @@ func (m Model) editJourney(journey models.Journey) (Model, tea.Cmd) {
 	return m, m.journeyForm.Init()
 }
 
+func (m Model) editSpace(space models.Space) (Model, tea.Cmd) {
+	m.editingSpace = &space
+	m.spaceFormData = &SpaceForm{Name: space.Name}
+	m.spaceForm = BuildSpaceForm(m.spaceFormData)
+	m.mode = SpaceEditFormView
+	return m, m.spaceForm.Init()
+}
+
 func (m Model) editEvent(event *models.Event) (Model, tea.Cmd) {
 	m.editingEvent = event
 
@@ -437,10 +584,14 @@ func (m Model) handleFormCompletion() (tea.Model, tea.Cmd) {
 		}
 
 		var journeyID *int
+		var spaceID *int
 		if m.questFormData.JourneyID != nil && *m.questFormData.JourneyID != 0 {
 			journeyID = m.questFormData.JourneyID
 		} else if m.selectedJourney != nil {
 			journeyID = &m.selectedJourney.ID
+		}
+		if m.selectedSpace != nil {
+			spaceID = &m.selectedSpace.ID
 		}
 
 		tempID := -int(time.Now().UnixNano())
@@ -454,6 +605,7 @@ func (m Model) handleFormCompletion() (tea.Model, tea.Cmd) {
 			XPReward:   0,
 			GoldReward: 0,
 			JourneyID:  journeyID,
+			SpaceID:    spaceID,
 			Status:     "todo",
 			CreatedAt:  time.Now(),
 			UpdatedAt:  time.Now(),
@@ -504,6 +656,9 @@ func (m Model) handleFormCompletion() (tea.Model, tea.Cmd) {
 					break
 				}
 			}
+		} else if m.selectedSpace != nil {
+			returnMode = SpaceDetailView
+			m.refreshSelectedSpaceLists()
 		}
 
 		message = fmt.Sprintf("✓ Quest created: %s", m.questFormData.Title)
@@ -515,6 +670,7 @@ func (m Model) handleFormCompletion() (tea.Model, tea.Cmd) {
 			m.questFormData.Note,
 			m.questFormData.Difficulty,
 			journeyID,
+			spaceID,
 		)
 
 	case JourneyFormView:
@@ -529,9 +685,13 @@ func (m Model) handleFormCompletion() (tea.Model, tea.Cmd) {
 			ID:        tempID,
 			Name:      m.journeyFormData.Name,
 			AuthorID:  0,
+			SpaceID:   nil,
 			Quests:    []models.Quest{},
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),
+		}
+		if m.selectedSpace != nil {
+			optimisticJourney.SpaceID = &m.selectedSpace.ID
 		}
 
 		m.data.Journeys = append(m.data.Journeys, optimisticJourney)
@@ -543,9 +703,41 @@ func (m Model) handleFormCompletion() (tea.Model, tea.Cmd) {
 
 		if m.selectedJourney != nil {
 			returnMode = JourneyDetailView
+		} else if m.selectedSpace != nil {
+			returnMode = SpaceDetailView
+			m.spaceSection = "journeys"
+			m.refreshSelectedSpaceLists()
 		}
 
-		m.journeyCreateCmd = createJourneyCmd(m.storage, tempID, m.journeyFormData.Name)
+		var journeySpaceID *int
+		if m.selectedSpace != nil {
+			journeySpaceID = &m.selectedSpace.ID
+		}
+		m.journeyCreateCmd = createJourneyCmd(m.storage, tempID, m.journeyFormData.Name, journeySpaceID)
+
+	case SpaceFormView:
+		if m.spaceFormData.Name == "" {
+			message = "Space name cannot be empty"
+			m.mode = QuestListView
+			m.message = message
+			return m, nil
+		}
+
+		tempID := -int(time.Now().UnixNano())
+		optimisticSpace := models.Space{
+			ID:        tempID,
+			Name:      m.spaceFormData.Name,
+			Owner:     models.User{Username: "you"},
+			Members:   []models.SpaceMember{},
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+		}
+		m.data.Spaces = append(m.data.Spaces, optimisticSpace)
+		m.spaceList = newSpaceList(m.data, m.width-4, m.height-10)
+		m.currentSection = "spaces"
+		message = fmt.Sprintf("✓ Space created: %s", m.spaceFormData.Name)
+		m.spaceCreateCmd = createSpaceCmd(m.storage, tempID, m.spaceFormData.Name)
+		returnMode = QuestListView
 
 	case HabitFormView:
 		if m.habitFormData.Name == "" {
@@ -689,6 +881,9 @@ func (m Model) handleFormCompletion() (tea.Model, tea.Cmd) {
 				}
 			}
 			returnMode = JourneyDetailView
+		} else if m.selectedSpace != nil {
+			returnMode = SpaceDetailView
+			m.refreshSelectedSpaceLists()
 		}
 
 		message = fmt.Sprintf("Updating quest...")
@@ -769,6 +964,40 @@ func (m Model) handleFormCompletion() (tea.Model, tea.Cmd) {
 			Name: &m.journeyFormData.Name,
 		})
 
+	case SpaceEditFormView:
+		if m.editingSpace == nil {
+			message = "No space being edited"
+			m.mode = QuestListView
+			m.message = message
+			return m, nil
+		}
+
+		if m.spaceFormData.Name == "" {
+			message = "Space name cannot be empty"
+			m.mode = QuestListView
+			m.message = message
+			return m, nil
+		}
+
+		spaceID := m.editingSpace.ID
+		for i := range m.data.Spaces {
+			if m.data.Spaces[i].ID == spaceID {
+				m.data.Spaces[i].Name = m.spaceFormData.Name
+				break
+			}
+		}
+
+		m.spaceList = newSpaceList(m.data, m.width-4, m.height-10)
+		if m.selectedSpace != nil && m.selectedSpace.ID == spaceID {
+			m.refreshSelectedSpaceLists()
+			returnMode = SpaceDetailView
+		}
+		m.currentSection = "spaces"
+		message = "Updating space..."
+		m.spaceUpdateCmd = updateSpaceCmd(m.storage, spaceID, api.UpdateSpaceRequest{
+			Name: &m.spaceFormData.Name,
+		})
+
 	case EventEditFormView:
 		if m.editingEvent == nil {
 			message = "No event being edited"
@@ -834,6 +1063,10 @@ func (m Model) handleFormCompletion() (tea.Model, tea.Cmd) {
 		}
 	}
 
+	if m.selectedSpace != nil && returnMode == SpaceDetailView {
+		m.refreshSelectedSpaceLists()
+	}
+
 	m.mode = returnMode
 	m.message = message
 	m.needsRedraw = true
@@ -851,6 +1084,9 @@ func (m Model) handleFormCompletion() (tea.Model, tea.Cmd) {
 	} else if m.eventCreateCmd != nil {
 		cmd = m.eventCreateCmd
 		m.eventCreateCmd = nil
+	} else if m.spaceCreateCmd != nil {
+		cmd = m.spaceCreateCmd
+		m.spaceCreateCmd = nil
 	} else if m.questUpdateCmd != nil {
 		cmd = m.questUpdateCmd
 		m.questUpdateCmd = nil
@@ -860,6 +1096,9 @@ func (m Model) handleFormCompletion() (tea.Model, tea.Cmd) {
 	} else if m.habitUpdateCmd != nil {
 		cmd = m.habitUpdateCmd
 		m.habitUpdateCmd = nil
+	} else if m.spaceUpdateCmd != nil {
+		cmd = m.spaceUpdateCmd
+		m.spaceUpdateCmd = nil
 	} else if m.questDeleteCmd != nil {
 		cmd = m.questDeleteCmd
 		m.questDeleteCmd = nil

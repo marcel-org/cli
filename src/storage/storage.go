@@ -22,6 +22,7 @@ type CacheData struct {
 	Quests    []models.Quest   `json:"quests"`
 	Habits    []models.Habit   `json:"habits"`
 	Events    []models.Event   `json:"events"`
+	Spaces    []models.Space   `json:"spaces"`
 }
 
 func New() (*Storage, error) {
@@ -114,12 +115,13 @@ func (s *Storage) LoadFromCache() (*models.AppData, error) {
 
 	appData.Habits = cache.Habits
 	appData.Events = cache.Events
+	appData.Spaces = cache.Spaces
 	appData.CurrentSection = "quests"
 
 	return &appData, nil
 }
 
-func (s *Storage) SaveToCache(journeys []models.Journey, quests []models.Quest, habits []models.Habit, events []models.Event) error {
+func (s *Storage) SaveToCache(journeys []models.Journey, quests []models.Quest, habits []models.Habit, events []models.Event, spaces []models.Space) error {
 	cachePath, err := s.getCachePath()
 	if err != nil {
 		return err
@@ -131,6 +133,7 @@ func (s *Storage) SaveToCache(journeys []models.Journey, quests []models.Quest, 
 		Quests:    quests,
 		Habits:    habits,
 		Events:    events,
+		Spaces:    spaces,
 	}
 
 	data, err := json.MarshalIndent(cache, "", "  ")
@@ -204,6 +207,11 @@ func (s *Storage) LoadAll() (*models.AppData, error) {
 		return &data, err
 	}
 
+	spaces, err := s.apiClient.GetSpaces()
+	if err != nil {
+		return &data, err
+	}
+
 	questsByJourney := make(map[int][]models.Quest)
 	var unassignedQuests []models.Quest
 
@@ -232,9 +240,10 @@ func (s *Storage) LoadAll() (*models.AppData, error) {
 
 	data.Habits = habits
 	data.Events = events
+	data.Spaces = spaces
 	data.CurrentSection = "quests"
 
-	s.SaveToCache(journeys, quests, habits, events)
+	s.SaveToCache(journeys, quests, habits, events, spaces)
 
 	return &data, nil
 }

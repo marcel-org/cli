@@ -17,7 +17,8 @@ type JourneyResponse struct {
 }
 
 type CreateJourneyRequest struct {
-	Name string `json:"name"`
+	Name    string `json:"name"`
+	SpaceID *int   `json:"spaceId,omitempty"`
 }
 
 type UpdateJourneyRequest struct {
@@ -44,9 +45,10 @@ func (c *Client) GetJourneys() ([]models.Journey, error) {
 	return result.Journeys, nil
 }
 
-func (c *Client) CreateJourney(name string) (*models.Journey, error) {
+func (c *Client) CreateJourney(name string, spaceID *int) (*models.Journey, error) {
 	req := CreateJourneyRequest{
-		Name: name,
+		Name:    name,
+		SpaceID: spaceID,
 	}
 
 	resp, err := c.doRequest("POST", "/journey", req)

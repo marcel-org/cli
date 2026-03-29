@@ -1,0 +1,109 @@
+[tasks.build]
+description = "Build Marcel for the current platform"
+run = """
+#!/usr/bin/env bash
+set -euo pipefail
+
+VERSION="$(git describe --tags --always --dirty 2>/dev/null || echo dev)"
+echo "Building marcel v${VERSION}..."
+mkdir -p build
+cd src
+go build -ldflags "-X main.version=${VERSION}" -o ../build/marcel .
+"""
+
+[tasks.build-all]
+description = "Build Marcel for all supported platforms"
+depends = ["clean"]
+run = """
+#!/usr/bin/env bash
+set -euo pipefail
+
+VERSION="$(git describe --tags --always --dirty 2>/dev/null || echo dev)"
+PLATFORMS=(linux_amd64 linux_arm64 darwin_amd64 darwin_arm64)
+
+echo "Building marcel v${VERSION} for all platforms..."
+mkdir -p dist
+
+for platform in "${PLATFORMS[@]}"; do
+  os="${platform%%_*}"
+  arch="${platform##*_}"
+  echo "Building for ${os}/${arch}..."
+  mkdir -p "dist/${platform}"
+  (
+    cd src
+    GOOS="${os}" GOARCH="${arch}" go build -ldflags "-X main.version=${VERSION}" -o "../dist/${platform}/marcel" .
+  )
+  tar -czf "dist/marcel_${platform}.tar.gz" -C "dist/${platform}" marcel
+  rm -rf "dist/${platform}"
+done
+
+echo "All builds completed in dist/"
+"""
+
+[tasks.test]
+description = "Run the Go test suite"
+run = """
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "Running tests..."
+cd src
+go test ./...
+"""
+
+[tasks.install]
+description = "Install Marcel into ~/.local/bin"
+depends = ["build"]
+run = """
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "Installing marcel to ~/.local/bin..."
+mkdir -p ~/.local/bin
+cp build/marcel ~/.local/bin/
+chmod +x ~/.local/bin/marcel
+echo "marcel installed successfully!"
+echo "Make sure ~/.local/bin is in your PATH"
+"""
+
+[tasks.uninstall]
+description = "Remove Marcel from ~/.local/bin"
+run = """
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "Uninstalling marcel from ~/.local/bin..."
+rm -f ~/.local/bin/marcel
+echo "marcel uninstalled successfully!"
+"""
+
+[tasks.clean]
+description = "Remove build artifacts"
+run = """
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "Cleaning build artifacts..."
+rm -rf build dist
+"""
+
+[tasks.release]
+description = "Build release archives and publish a GitHub release"
+depends = ["build-all"]
+run = """
+#!/usr/bin/env bash
+set -euo pipefail
+
+VERSION="$(git describe --tags --always --dirty 2>/dev/null || echo dev)"
+if [ "${VERSION}" = "dev" ]; then
+  echo "Error: Cannot create release with dev version. Please tag your commit first."
+  exit 1
+fi
+
+echo "Creating release v${VERSION}..."
+gh release create "v${VERSION}" dist/*.tar.gz --title "Release v${VERSION}" --generate-notes
+"""
+
+[tasks.default]
+description = "Default task"
+depends = ["build"]

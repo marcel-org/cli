@@ -19,6 +19,8 @@ func (m Model) View() string {
 		return m.renderQuestListView()
 	case JourneyDetailView:
 		return m.renderJourneyDetailView()
+	case SpaceDetailView:
+		return m.renderSpaceDetailView()
 	case LoadingView:
 		return m.renderLoadingView()
 	case ErrorView:
@@ -35,6 +37,8 @@ func (m Model) View() string {
 		return m.renderFormView(m.habitForm)
 	case EventFormView:
 		return m.renderFormView(m.eventForm)
+	case SpaceFormView:
+		return m.renderFormView(m.spaceForm)
 	case QuestEditFormView:
 		return m.renderFormView(m.questForm)
 	case JourneyEditFormView:
@@ -43,6 +47,8 @@ func (m Model) View() string {
 		return m.renderFormView(m.habitForm)
 	case EventEditFormView:
 		return m.renderFormView(m.eventForm)
+	case SpaceEditFormView:
+		return m.renderFormView(m.spaceForm)
 	}
 
 	return ""
@@ -64,6 +70,9 @@ func (m Model) renderQuestListView() string {
 	case "journeys":
 		headerText = "Marcel - Journeys"
 		content = m.journeyList.View()
+	case "spaces":
+		headerText = "Marcel - Spaces"
+		content = m.spaceList.View()
 	case "calendar":
 		headerText = "Marcel - Calendar"
 		content = m.calendar.View()
@@ -119,6 +128,7 @@ func renderTabs(currentSection string, width int) string {
 	questStyle := lipgloss.NewStyle().Padding(0, 2).Foreground(lipgloss.NoColor{})
 	habitStyle := lipgloss.NewStyle().Padding(0, 2).Foreground(lipgloss.NoColor{})
 	journeyStyle := lipgloss.NewStyle().Padding(0, 2).Foreground(lipgloss.NoColor{})
+	spaceStyle := lipgloss.NewStyle().Padding(0, 2).Foreground(lipgloss.NoColor{})
 	calendarStyle := lipgloss.NewStyle().Padding(0, 2).Foreground(lipgloss.NoColor{})
 
 	switch currentSection {
@@ -128,6 +138,8 @@ func renderTabs(currentSection string, width int) string {
 		habitStyle = habitStyle.Foreground(colors.BrandOrange).Bold(true).Background(colors.BackgroundSecondary)
 	case "journeys":
 		journeyStyle = journeyStyle.Foreground(colors.BrandOrange).Bold(true).Background(colors.BackgroundSecondary)
+	case "spaces":
+		spaceStyle = spaceStyle.Foreground(colors.BrandOrange).Bold(true).Background(colors.BackgroundSecondary)
 	case "calendar":
 		calendarStyle = calendarStyle.Foreground(colors.BrandOrange).Bold(true).Background(colors.BackgroundSecondary)
 	}
@@ -137,6 +149,7 @@ func renderTabs(currentSection string, width int) string {
 		questStyle.Render("󰝖 Quests"),
 		habitStyle.Render("\uf06d Habits"),
 		journeyStyle.Render("󰺄 Journeys"),
+		spaceStyle.Render("󱂬 Spaces"),
 		calendarStyle.Render("󰃭 Calendar"),
 	)
 
@@ -365,6 +378,84 @@ func (m Model) renderJourneyDetailView() string {
 
 	bottomSection := lipgloss.JoinVertical(lipgloss.Left, statusBars...)
 
+	topHeight := m.height - lipgloss.Height(bottomSection)
+	topPadded := lipgloss.NewStyle().Height(topHeight).Render(topSection)
+
+	return lipgloss.JoinVertical(
+		lipgloss.Left,
+		topPadded,
+		bottomSection,
+	)
+}
+
+func renderSpaceTabs(currentSection string, width int) string {
+	questStyle := lipgloss.NewStyle().Padding(0, 2).Foreground(lipgloss.NoColor{})
+	journeyStyle := lipgloss.NewStyle().Padding(0, 2).Foreground(lipgloss.NoColor{})
+	memberStyle := lipgloss.NewStyle().Padding(0, 2).Foreground(lipgloss.NoColor{})
+
+	switch currentSection {
+	case "quests":
+		questStyle = questStyle.Foreground(colors.BrandOrange).Bold(true).Background(colors.BackgroundSecondary)
+	case "journeys":
+		journeyStyle = journeyStyle.Foreground(colors.BrandOrange).Bold(true).Background(colors.BackgroundSecondary)
+	case "members":
+		memberStyle = memberStyle.Foreground(colors.BrandOrange).Bold(true).Background(colors.BackgroundSecondary)
+	}
+
+	tabs := lipgloss.JoinHorizontal(
+		lipgloss.Left,
+		questStyle.Render("󰝖 Quests"),
+		journeyStyle.Render("󰺄 Journeys"),
+		memberStyle.Render("󰷌 Members"),
+	)
+
+	return lipgloss.NewStyle().Width(width).Render(tabs)
+}
+
+func (m Model) renderSpaceDetailView() string {
+	if m.selectedSpace == nil {
+		return ""
+	}
+
+	headerText := fmt.Sprintf("Marcel - %s", m.selectedSpace.Name)
+	header := HeaderStyle.Width(m.width).Render(headerText)
+	tabs := renderSpaceTabs(m.spaceSection, m.width)
+
+	var content string
+	switch m.spaceSection {
+	case "journeys":
+		content = m.spaceJourneyList.View()
+	case "members":
+		content = m.spaceMemberList.View()
+	default:
+		content = m.spaceQuestList.View()
+	}
+
+	statusBars := []string{}
+	if m.message != "" {
+		var msgStyle lipgloss.Style
+		if strings.Contains(m.message, "✓") {
+			msgStyle = SuccessStyle
+		} else if strings.Contains(m.message, "Failed") || strings.Contains(m.message, "Error") {
+			msgStyle = ErrorStyle
+		} else {
+			msgStyle = MutedStyle
+		}
+		statusBars = append(statusBars, StatusBarStyle.Width(m.width).Render(msgStyle.Render(m.message)))
+	}
+
+	topSection := lipgloss.JoinVertical(
+		lipgloss.Left,
+		header,
+		tabs,
+		content,
+	)
+
+	if len(statusBars) == 0 {
+		return topSection
+	}
+
+	bottomSection := lipgloss.JoinVertical(lipgloss.Left, statusBars...)
 	topHeight := m.height - lipgloss.Height(bottomSection)
 	topPadded := lipgloss.NewStyle().Height(topHeight).Render(topSection)
 

@@ -21,6 +21,7 @@ type CreateQuestRequest struct {
 	Note       string `json:"note"`
 	Difficulty string `json:"difficulty"`
 	JourneyID  *int   `json:"journeyId,omitempty"`
+	SpaceID    *int   `json:"spaceId,omitempty"`
 }
 
 type UpdateQuestRequest struct {
@@ -50,12 +51,13 @@ func (c *Client) GetQuests() ([]models.Quest, error) {
 	return result.Quests, nil
 }
 
-func (c *Client) CreateQuest(title, note, difficulty string, journeyID *int) (*models.Quest, error) {
+func (c *Client) CreateQuest(title, note, difficulty string, journeyID, spaceID *int) (*models.Quest, error) {
 	req := CreateQuestRequest{
 		Title:      title,
 		Note:       note,
 		Difficulty: difficulty,
 		JourneyID:  journeyID,
+		SpaceID:    spaceID,
 	}
 
 	resp, err := c.doRequest("POST", "/quest", req)

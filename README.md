@@ -24,9 +24,16 @@ curl -fsSL https://raw.githubusercontent.com/marcel-org/cli/main/install.sh | ba
 ```bash
 git clone https://github.com/marcel-org/cli.git
 cd cli
-cd src
-go build -o ../marcel
-cp ../marcel ~/.local/bin/marcel
+mise run install
+```
+
+Common developer tasks:
+
+```bash
+mise run build
+mise run test
+mise run install
+mise run clean
 ```
 
 ## Authentication

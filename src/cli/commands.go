@@ -286,7 +286,7 @@ func questAdd(args []string) error {
 		journeyPtr = &journeyID.value
 	}
 
-	quest, err := client.CreateQuest(fs.Arg(0), *note, *difficulty, journeyPtr)
+	quest, err := client.CreateQuest(fs.Arg(0), *note, *difficulty, journeyPtr, nil)
 	if err != nil {
 		return err
 	}
@@ -472,7 +472,7 @@ func journeyAdd(args []string) error {
 		return err
 	}
 
-	journey, err := client.CreateJourney(args[0])
+	journey, err := client.CreateJourney(args[0], nil)
 	if err != nil {
 		return err
 	}

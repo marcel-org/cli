@@ -22,14 +22,17 @@ const (
 	HelpView
 	ConfirmDeleteView
 	JourneyDetailView
+	SpaceDetailView
 	QuestFormView
 	JourneyFormView
 	HabitFormView
 	EventFormView
+	SpaceFormView
 	QuestEditFormView
 	JourneyEditFormView
 	HabitEditFormView
 	EventEditFormView
+	SpaceEditFormView
 )
 
 type clearMessageMsg struct{}
@@ -107,16 +110,28 @@ type habitUpdatedMsg struct {
 	err     error
 }
 
-func createQuestCmd(s *storage.Storage, tempID int, title, note, difficulty string, journeyID *int) tea.Cmd {
+type spaceCreatedMsg struct {
+	tempID int
+	space  *models.Space
+	err    error
+}
+
+type spaceUpdatedMsg struct {
+	spaceID int
+	space   *models.Space
+	err     error
+}
+
+func createQuestCmd(s *storage.Storage, tempID int, title, note, difficulty string, journeyID, spaceID *int) tea.Cmd {
 	return func() tea.Msg {
-		quest, err := s.GetAPIClient().CreateQuest(title, note, difficulty, journeyID)
+		quest, err := s.GetAPIClient().CreateQuest(title, note, difficulty, journeyID, spaceID)
 		return questCreatedMsg{tempID: tempID, quest: quest, err: err}
 	}
 }
 
-func createJourneyCmd(s *storage.Storage, tempID int, name string) tea.Cmd {
+func createJourneyCmd(s *storage.Storage, tempID int, name string, spaceID *int) tea.Cmd {
 	return func() tea.Msg {
-		journey, err := s.GetAPIClient().CreateJourney(name)
+		journey, err := s.GetAPIClient().CreateJourney(name, spaceID)
 		return journeyCreatedMsg{tempID: tempID, journey: journey, err: err}
 	}
 }
@@ -177,6 +192,20 @@ func updateHabitCmd(s *storage.Storage, habitID int, updates api.UpdateHabitRequ
 	}
 }
 
+func createSpaceCmd(s *storage.Storage, tempID int, name string) tea.Cmd {
+	return func() tea.Msg {
+		space, err := s.GetAPIClient().CreateSpace(name)
+		return spaceCreatedMsg{tempID: tempID, space: space, err: err}
+	}
+}
+
+func updateSpaceCmd(s *storage.Storage, spaceID int, updates api.UpdateSpaceRequest) tea.Cmd {
+	return func() tea.Msg {
+		space, err := s.GetAPIClient().UpdateSpace(spaceID, updates)
+		return spaceUpdatedMsg{spaceID: spaceID, space: space, err: err}
+	}
+}
+
 func loadDataCmd(s *storage.Storage) tea.Cmd {
 	return func() tea.Msg {
 		data, err := s.LoadFromCache()
@@ -231,10 +260,15 @@ type Model struct {
 	data             *models.AppData
 	mode             ViewMode
 	currentSection   string
+	spaceSection     string
 	questList        list.Model
 	habitList        list.Model
 	journeyList      list.Model
+	spaceList        list.Model
 	journeyQuestList list.Model
+	spaceQuestList   list.Model
+	spaceJourneyList list.Model
+	spaceMemberList  list.Model
 	calendar         *components.Calendar
 	spinner          spinner.Model
 	message          string
@@ -249,30 +283,36 @@ type Model struct {
 	confirmEvent     *models.Event
 	confirmSelected  bool
 	selectedJourney  *models.Journey
+	selectedSpace    *models.Space
 	questForm        *huh.Form
 	journeyForm      *huh.Form
 	habitForm        *huh.Form
 	eventForm        *huh.Form
+	spaceForm        *huh.Form
 	questFormData    *QuestForm
 	journeyFormData  *JourneyForm
 	habitFormData    *HabitForm
 	eventFormData    *EventForm
+	spaceFormData    *SpaceForm
 	editingQuest     *models.Quest
 	editingHabit     *models.Habit
 	editingJourney   *models.Journey
 	editingEvent     *models.Event
+	editingSpace     *models.Space
 	syncStatus       SyncStatus
 	syncSpinner      spinner.Model
 	questCreateCmd   tea.Cmd
 	journeyCreateCmd tea.Cmd
 	habitCreateCmd   tea.Cmd
 	eventCreateCmd   tea.Cmd
+	spaceCreateCmd   tea.Cmd
 	questDeleteCmd   tea.Cmd
 	journeyDeleteCmd tea.Cmd
 	habitDeleteCmd   tea.Cmd
 	questUpdateCmd   tea.Cmd
 	journeyUpdateCmd tea.Cmd
 	habitUpdateCmd   tea.Cmd
+	spaceUpdateCmd   tea.Cmd
 }
 
 func NewModel() (*Model, error) {
@@ -310,6 +350,7 @@ func NewModel() (*Model, error) {
 		syncSpinner:    syncSp,
 		data:           data,
 		currentSection: data.CurrentSection,
+		spaceSection:   "quests",
 		calendar:       cal,
 		syncStatus:     SyncStatusNone,
 	}
