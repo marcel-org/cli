@@ -1,13 +1,13 @@
 # Marcel CLI
 
-Terminal interface for managing your Marcel quests and calendar.
+Terminal client for managing Marcel from either an interactive TUI or direct shell commands.
 
 ## Features
 
-- View and manage quests with an interactive TUI
-- Toggle quest completion with instant sync
-- Create and delete quests
-- Real-time filtering
+- Interactive TUI for quests and calendar
+- Scriptable CLI subcommands for quests, journeys, habits, and events
+- Plain table output for humans and `--json` output for scripts
+- Instant sync for create, update, toggle, and delete actions
 - Calendar view with week/month modes
 - Modern UI with Charmbracelet components
 
@@ -24,8 +24,9 @@ curl -fsSL https://raw.githubusercontent.com/marcel-org/cli/main/install.sh | ba
 ```bash
 git clone https://github.com/marcel-org/cli.git
 cd cli
-go build -o marcel
-cp marcel ~/.local/bin/marcel
+cd src
+go build -o ../marcel
+cp ../marcel ~/.local/bin/marcel
 ```
 
 ## Authentication
@@ -44,6 +45,46 @@ Add this to your shell config (`~/.zshrc`, `~/.bashrc`) to make it permanent.
 
 ```bash
 marcel
+```
+
+This still starts the TUI by default. You can also start it explicitly:
+
+```bash
+marcel tui
+```
+
+### Direct CLI Commands
+
+```bash
+marcel help
+marcel auth check
+
+marcel quest list
+marcel quest list --json
+marcel quest add "Write proposal" --note "Draft outline" --difficulty medium
+marcel quest done 42
+marcel quest undo 42
+marcel quest toggle 42
+marcel quest update 42 --title "Write final proposal"
+marcel quest delete 42
+
+marcel journey list
+marcel journey add "Health"
+marcel journey update 3 --name "Fitness"
+marcel journey delete 3
+
+marcel habit list
+marcel habit add "Meditate" --cycle daily
+marcel habit done 8
+marcel habit undo 8
+marcel habit update 8 --name "Walk" --cycle weekly
+marcel habit delete 8
+
+marcel event list
+marcel event list --all
+marcel event add "Doctor" --date 2026-03-28 --time 09:00 --location "Berlin"
+marcel event update 15 --title "Dentist" --time 10:30
+marcel event delete 15
 ```
 
 ### Keyboard Controls
@@ -70,6 +111,8 @@ Optional `~/.marcel.yml` file:
 ```yaml
 week_start_day: sunday  # Options: sunday, monday, tuesday, etc.
 ```
+
+`list` commands support `--json` for machine-readable output. `marcel event list` shows only today's and future events by default; use `--all` to include past events.
 
 ## Tech Stack
 

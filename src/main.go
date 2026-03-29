@@ -1,10 +1,13 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"log"
+	"os"
 
+	"marcel-cli/cli"
 	"marcel-cli/ui"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -13,20 +16,53 @@ import (
 var version = "dev"
 
 func main() {
-	var showVersion = flag.Bool("version", false, "Show version information")
-	var showHelp = flag.Bool("help", false, "Show help information")
-	flag.Parse()
+	fs := flag.NewFlagSet(os.Args[0], flag.ContinueOnError)
+	fs.SetOutput(os.Stderr)
+	fs.Usage = cli.ShowHelp
+
+	var showVersion = fs.Bool("version", false, "Show version information")
+	var showHelp = fs.Bool("help", false, "Show help information")
+	var showHelpShort = fs.Bool("h", false, "Show help information")
+
+	if err := fs.Parse(os.Args[1:]); err != nil {
+		if errors.Is(err, flag.ErrHelp) {
+			return
+		}
+		os.Exit(2)
+	}
 
 	if *showVersion {
 		fmt.Printf("marcel version %s\n", version)
 		return
 	}
 
-	if *showHelp {
-		showHelpText()
+	if *showHelp || *showHelpShort {
+		cli.ShowHelp()
 		return
 	}
 
+	if fs.NArg() > 0 {
+		switch fs.Arg(0) {
+		case "tui":
+			runTUI()
+			return
+		default:
+			if err := cli.Run(fs.Args(), version); err != nil {
+				if errors.Is(err, cli.ErrShowHelp) {
+					cli.ShowHelp()
+					return
+				}
+				fmt.Fprintln(os.Stderr, err)
+				os.Exit(1)
+			}
+			return
+		}
+	}
+
+	runTUI()
+}
+
+func runTUI() {
 	model, err := ui.NewModel()
 	if err != nil {
 		log.Fatal(err)
@@ -37,37 +73,4 @@ func main() {
 	if _, err := p.Run(); err != nil {
 		log.Fatal(err)
 	}
-}
-
-func showHelpText() {
-	fmt.Println(`Marcel CLI - Gamified productivity TUI application
-
-USAGE:
-    marcel [OPTIONS]
-
-OPTIONS:
-    --version    Show version information
-    --help       Show this help message
-
-KEYBOARD CONTROLS:
-
-Quest View:
-    j/k, arrows  Navigate quests
-    gg           Jump to top
-    G            Jump to bottom
-    Space        Toggle quest completion
-    ?            Show/hide help
-    q, Ctrl+C    Quit
-
-Input Mode:
-    Type         Enter text
-    Enter        Confirm
-    Esc          Cancel
-    Backspace    Delete character
-
-CONFIGURATION:
-    Auth token: Create ~/.marcel.token file with your token
-                OR set MARCEL_TOKEN environment variable
-
-For more information, visit: https://github.com/marcel-org/cli`)
 }
