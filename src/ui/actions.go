@@ -1047,6 +1047,7 @@ func (m Model) handleFormCompletion() (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 
+		m.upsertEvent(m.editingEvent.ID, *event)
 		message = fmt.Sprintf("✓ Event updated: %s", event.Title)
 		m.editingEvent = nil
 		m.currentSection = "calendar"

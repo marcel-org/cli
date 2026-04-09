@@ -261,17 +261,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			}
 			m.message = fmt.Sprintf("Failed to create event: %v", msg.err)
-			m.calendar.SetEvents(m.data.Events)
+			m.syncCalendarEvents()
 			m.needsRedraw = true
 			cmds = append(cmds, clearMessageAfter(3*time.Second))
 		} else if msg.event != nil {
-			for i := range m.data.Events {
-				if m.data.Events[i].ID == msg.tempID {
-					m.data.Events[i] = *msg.event
-					break
-				}
-			}
-			m.calendar.SetEvents(m.data.Events)
+			m.upsertEvent(msg.tempID, *msg.event)
 		}
 
 	case questDeletedMsg:
