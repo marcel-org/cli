@@ -28,23 +28,25 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.height = msg.Height
 
 		if !m.ready {
-			m.questList = newQuestList(m.data, m.width-4, m.height-10)
-			m.habitList = newHabitList(m.data, m.width-4, m.height-10)
-			m.journeyList = newJourneyList(m.data, m.width-4, m.height-10)
-			m.spaceList = newSpaceList(m.data, m.width-4, m.height-10)
+			m.rebuildLists()
 			m.calendar.SetSize(m.width-4, m.height-10)
 			m.calendar.SetEvents(m.data.Events)
-			m.refreshSelectedSpaceLists()
 			m.ready = true
 		} else {
-			m.questList.SetSize(m.width-4, m.height-10)
-			m.habitList.SetSize(m.width-4, m.height-10)
-			m.journeyList.SetSize(m.width-4, m.height-10)
-			m.spaceList.SetSize(m.width-4, m.height-10)
-			m.spaceQuestList.SetSize(m.width-4, m.height-10)
-			m.spaceJourneyList.SetSize(m.width-4, m.height-10)
-			m.spaceMemberList.SetSize(m.width-4, m.height-10)
-			m.calendar.SetSize(m.width-4, m.height-10)
+			w, h := m.width-4, m.height-10
+			m.questList.SetSize(w, h)
+			m.habitList.SetSize(w, h)
+			m.journeyList.SetSize(w, h)
+			m.spaceList.SetSize(w, h)
+			if m.selectedSpace != nil {
+				m.spaceQuestList.SetSize(w, h)
+				m.spaceJourneyList.SetSize(w, h)
+				m.spaceMemberList.SetSize(w, h)
+			}
+			if m.selectedJourney != nil {
+				m.journeyQuestList.SetSize(w, h)
+			}
+			m.calendar.SetSize(w, h)
 		}
 
 	case tea.KeyMsg:
@@ -92,12 +94,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.data = msg.data
 			m.mode = QuestListView
 			m.currentSection = msg.data.CurrentSection
-			m.questList = newQuestList(m.data, m.width-4, m.height-10)
-			m.habitList = newHabitList(m.data, m.width-4, m.height-10)
-			m.journeyList = newJourneyList(m.data, m.width-4, m.height-10)
-			m.spaceList = newSpaceList(m.data, m.width-4, m.height-10)
+			m.rebuildLists()
 			m.calendar.SetEvents(m.data.Events)
-			m.refreshSelectedSpaceLists()
 			m.syncStatus = SyncStatusSyncing
 			cmds = append(cmds, backgroundSyncCmd(m.storage), m.syncSpinner.Tick)
 		}
@@ -125,12 +123,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.mode = QuestListView
 				m.currentSection = msg.data.CurrentSection
 			}
-			m.questList = newQuestList(m.data, m.width-4, m.height-10)
-			m.habitList = newHabitList(m.data, m.width-4, m.height-10)
-			m.journeyList = newJourneyList(m.data, m.width-4, m.height-10)
-			m.spaceList = newSpaceList(m.data, m.width-4, m.height-10)
+			m.rebuildLists()
 			m.calendar.SetEvents(m.data.Events)
-			m.refreshSelectedSpaceLists()
 
 			var allQuests []models.Quest
 			for _, journey := range m.data.Journeys {
@@ -157,30 +151,20 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			}
 			m.message = fmt.Sprintf("Failed to create quest: %v", msg.err)
-			m.questList = newQuestList(m.data, m.width-4, m.height-10)
-			m.refreshSelectedSpaceLists()
+			m.rebuildLists()
 			m.needsRedraw = true
 			cmds = append(cmds, clearMessageAfter(3*time.Second))
 		} else if msg.quest != nil {
 			for i := range m.data.Journeys {
 				for j := range m.data.Journeys[i].Quests {
 					if m.data.Journeys[i].Quests[j].ID == msg.tempID {
-						m.data.Journeys[i].Quests[j] = *msg.quest
+						m.data.Journeys[i].Quests = append(m.data.Journeys[i].Quests[:j], m.data.Journeys[i].Quests[j+1:]...)
+						m.data.Journeys[i].Quests = append([]models.Quest{*msg.quest}, m.data.Journeys[i].Quests...)
 						break
 					}
 				}
 			}
-			m.questList = newQuestList(m.data, m.width-4, m.height-10)
-			if m.selectedJourney != nil {
-				for _, j := range m.data.Journeys {
-					if j.ID == m.selectedJourney.ID {
-						m.selectedJourney = &j
-						m.journeyQuestList = newJourneyQuestList(&j, m.width-4, m.height-10)
-						break
-					}
-				}
-			}
-			m.refreshSelectedSpaceLists()
+			m.rebuildLists()
 		}
 
 	case journeyCreatedMsg:
@@ -192,8 +176,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			}
 			m.message = fmt.Sprintf("Failed to create journey: %v", msg.err)
-			m.journeyList = newJourneyList(m.data, m.width-4, m.height-10)
-			m.refreshSelectedSpaceLists()
+			m.rebuildLists()
 			m.needsRedraw = true
 			cmds = append(cmds, clearMessageAfter(3*time.Second))
 		} else if msg.journey != nil {
@@ -203,8 +186,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					break
 				}
 			}
-			m.journeyList = newJourneyList(m.data, m.width-4, m.height-10)
-			m.refreshSelectedSpaceLists()
+			m.rebuildLists()
 		}
 
 	case spaceCreatedMsg:
@@ -216,7 +198,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			}
 			m.message = fmt.Sprintf("Failed to create space: %v", msg.err)
-			m.spaceList = newSpaceList(m.data, m.width-4, m.height-10)
+			m.rebuildLists()
 			m.needsRedraw = true
 			cmds = append(cmds, clearMessageAfter(3*time.Second))
 		} else if msg.space != nil {
@@ -226,8 +208,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					break
 				}
 			}
-			m.spaceList = newSpaceList(m.data, m.width-4, m.height-10)
-			m.refreshSelectedSpaceLists()
+			m.rebuildLists()
 		}
 
 	case habitCreatedMsg:
@@ -239,7 +220,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			}
 			m.message = fmt.Sprintf("Failed to create habit: %v", msg.err)
-			m.habitList = newHabitList(m.data, m.width-4, m.height-10)
+			m.rebuildLists()
 			m.needsRedraw = true
 			cmds = append(cmds, clearMessageAfter(3*time.Second))
 		} else if msg.habit != nil {
@@ -249,7 +230,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					break
 				}
 			}
-			m.habitList = newHabitList(m.data, m.width-4, m.height-10)
+			m.rebuildLists()
 		}
 
 	case eventCreatedMsg:
@@ -268,9 +249,23 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.upsertEvent(msg.tempID, *msg.event)
 		}
 
+	case questToggledMsg:
+		if msg.err != nil {
+			for i := range m.data.Journeys {
+				for j := range m.data.Journeys[i].Quests {
+					if m.data.Journeys[i].Quests[j].ID == msg.questID {
+						m.data.Journeys[i].Quests[j].Done = !msg.done
+					}
+				}
+			}
+			m.rebuildLists()
+			m.needsRedraw = true
+			m.message = fmt.Sprintf("Failed to toggle quest: %v", msg.err)
+			cmds = append(cmds, clearMessageAfter(3*time.Second))
+		}
+
 	case questDeletedMsg:
 		if msg.err != nil {
-			// Rollback: restore the deleted quest
 			if m.confirmQuest != nil {
 				found := false
 				for i := range m.data.Journeys {
@@ -284,7 +279,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						break
 					}
 				}
-				// If journey not found, create "My Quests" journey
 				if !found && m.confirmQuest.JourneyID == nil {
 					myQuests := models.Journey{
 						ID:     0,
@@ -293,8 +287,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					}
 					m.data.Journeys = append([]models.Journey{myQuests}, m.data.Journeys...)
 				}
-				m.questList = newQuestList(m.data, m.width-4, m.height-10)
-				m.refreshSelectedSpaceLists()
+				m.rebuildLists()
 				m.needsRedraw = true
 			}
 			m.message = fmt.Sprintf("Failed to delete quest: %v", msg.err)
@@ -307,10 +300,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case habitDeletedMsg:
 		if msg.err != nil {
-			// Rollback: restore the deleted habit
 			if m.confirmHabit != nil {
 				m.data.Habits = append(m.data.Habits, *m.confirmHabit)
-				m.habitList = newHabitList(m.data, m.width-4, m.height-10)
+				m.rebuildLists()
 				m.needsRedraw = true
 			}
 			m.message = fmt.Sprintf("Failed to delete habit: %v", msg.err)
@@ -323,11 +315,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case journeyDeletedMsg:
 		if msg.err != nil {
-			// Rollback: restore the deleted journey
 			if m.confirmJourney != nil {
 				m.data.Journeys = append(m.data.Journeys, *m.confirmJourney)
-				m.journeyList = newJourneyList(m.data, m.width-4, m.height-10)
-				m.refreshSelectedSpaceLists()
+				m.rebuildLists()
 				m.needsRedraw = true
 			}
 			m.message = fmt.Sprintf("Failed to delete journey: %v", msg.err)
@@ -340,7 +330,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case questUpdatedMsg:
 		if msg.err != nil {
-			// Rollback: restore the original quest
 			if m.editingQuest != nil {
 				for i := range m.data.Journeys {
 					for j := range m.data.Journeys[i].Quests {
@@ -350,23 +339,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						}
 					}
 				}
-				m.questList = newQuestList(m.data, m.width-4, m.height-10)
-				m.refreshSelectedSpaceLists()
-				if m.selectedJourney != nil {
-					for _, j := range m.data.Journeys {
-						if j.ID == m.selectedJourney.ID {
-							m.selectedJourney = &j
-							m.journeyQuestList = newJourneyQuestList(&j, m.width-4, m.height-10)
-							break
-						}
-					}
-				}
+				m.rebuildLists()
 				m.needsRedraw = true
 			}
 			m.message = fmt.Sprintf("Failed to update quest: %v", msg.err)
 			cmds = append(cmds, clearMessageAfter(3*time.Second))
 		} else if msg.quest != nil {
-			// Replace with server data
 			for i := range m.data.Journeys {
 				for j := range m.data.Journeys[i].Quests {
 					if m.data.Journeys[i].Quests[j].ID == msg.questID {
@@ -375,17 +353,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					}
 				}
 			}
-			m.questList = newQuestList(m.data, m.width-4, m.height-10)
-			if m.selectedJourney != nil {
-				for _, j := range m.data.Journeys {
-					if j.ID == m.selectedJourney.ID {
-						m.selectedJourney = &j
-						m.journeyQuestList = newJourneyQuestList(&j, m.width-4, m.height-10)
-						break
-					}
-				}
-			}
-			m.refreshSelectedSpaceLists()
+			m.rebuildLists()
 			m.message = "Quest updated successfully"
 			cmds = append(cmds, clearMessageAfter(1*time.Second))
 		}
@@ -393,7 +361,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case habitUpdatedMsg:
 		if msg.err != nil {
-			// Rollback: restore the original habit
 			if m.editingHabit != nil {
 				for i := range m.data.Habits {
 					if m.data.Habits[i].ID == msg.habitID {
@@ -401,20 +368,19 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						break
 					}
 				}
-				m.habitList = newHabitList(m.data, m.width-4, m.height-10)
+				m.rebuildLists()
 				m.needsRedraw = true
 			}
 			m.message = fmt.Sprintf("Failed to update habit: %v", msg.err)
 			cmds = append(cmds, clearMessageAfter(3*time.Second))
 		} else if msg.habit != nil {
-			// Replace with server data
 			for i := range m.data.Habits {
 				if m.data.Habits[i].ID == msg.habitID {
 					m.data.Habits[i] = *msg.habit
 					break
 				}
 			}
-			m.habitList = newHabitList(m.data, m.width-4, m.height-10)
+			m.rebuildLists()
 			m.message = "Habit updated successfully"
 			cmds = append(cmds, clearMessageAfter(1*time.Second))
 		}
@@ -422,7 +388,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case journeyUpdatedMsg:
 		if msg.err != nil {
-			// Rollback: restore the original journey
 			if m.editingJourney != nil {
 				for i := range m.data.Journeys {
 					if m.data.Journeys[i].ID == msg.journeyID {
@@ -430,22 +395,19 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						break
 					}
 				}
-				m.journeyList = newJourneyList(m.data, m.width-4, m.height-10)
-				m.refreshSelectedSpaceLists()
+				m.rebuildLists()
 				m.needsRedraw = true
 			}
 			m.message = fmt.Sprintf("Failed to update journey: %v", msg.err)
 			cmds = append(cmds, clearMessageAfter(3*time.Second))
 		} else if msg.journey != nil {
-			// Replace with server data
 			for i := range m.data.Journeys {
 				if m.data.Journeys[i].ID == msg.journeyID {
 					m.data.Journeys[i] = *msg.journey
 					break
 				}
 			}
-			m.journeyList = newJourneyList(m.data, m.width-4, m.height-10)
-			m.refreshSelectedSpaceLists()
+			m.rebuildLists()
 			m.message = "Journey updated successfully"
 			cmds = append(cmds, clearMessageAfter(1*time.Second))
 		}
@@ -460,8 +422,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 						break
 					}
 				}
-				m.spaceList = newSpaceList(m.data, m.width-4, m.height-10)
-				m.refreshSelectedSpaceLists()
+				m.rebuildLists()
 				m.needsRedraw = true
 			}
 			m.message = fmt.Sprintf("Failed to update space: %v", msg.err)
@@ -473,8 +434,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					break
 				}
 			}
-			m.spaceList = newSpaceList(m.data, m.width-4, m.height-10)
-			m.refreshSelectedSpaceLists()
+			m.rebuildLists()
 			m.message = "Space updated successfully"
 			cmds = append(cmds, clearMessageAfter(1*time.Second))
 		}
