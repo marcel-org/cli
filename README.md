@@ -121,6 +121,11 @@ week_start_day: sunday  # Options: sunday, monday, tuesday, etc.
 
 `list` commands support `--json` for machine-readable output. `marcel event list` shows only today's and future events by default; use `--all` to include past events.
 
+## AI agent integration
+
+`install.sh` auto-registers marcel as an AI agent skill for Claude Code and Codex.
+After installation, AI coding assistants can use marcel commands directly when you ask about tasks, events, habits, or focus sessions.
+
 ## Tech Stack
 
 - [Bubble Tea](https://github.com/charmbracelet/bubbletea) - TUI framework
